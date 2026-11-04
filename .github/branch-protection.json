@@ -1,11 +1,19 @@
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": [],
     "checks": [
-      {"context": "specifications", "app_id": 15368},
-      {"context": "agentmarshal-gate", "app_id": 15368},
-      {"context": "agentmarshal-review", "app_id": -1}
+      {
+        "context": "specifications",
+        "app_id": 15368
+      },
+      {
+        "context": "agentmarshal-gate",
+        "app_id": 15368
+      },
+      {
+        "context": "agentmarshal-review",
+        "app_id": -1
+      }
     ]
   },
   "enforce_admins": true,
