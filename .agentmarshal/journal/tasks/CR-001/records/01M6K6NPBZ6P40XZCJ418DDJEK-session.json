@@ -1,0 +1,25 @@
+{
+  "activity": "implementation",
+  "actor": "agent-devin",
+  "commit": "774d5bc966b26833cc21616a03a7733ee23977e6",
+  "created_at": "2026-11-04T11:56:22.783292Z",
+  "model": "swe-2-max",
+  "outcome": "implemented",
+  "record_type": "session",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "role": "implementer",
+  "schema": 7,
+  "source": "live",
+  "task": "CR-001",
+  "tokens": {
+    "cache": 4949568,
+    "input": 56909,
+    "output": 88576
+  },
+  "tool_version": "0.6.0",
+  "usage": {
+    "method": "reported",
+    "provider": "devin"
+  }
+}
