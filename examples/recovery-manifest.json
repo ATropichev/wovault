@@ -1,0 +1,64 @@
+{
+  "illustrative_only": true,
+  "format_version": "0.1-draft",
+  "recovery_point_id": "00000000-0000-4000-8000-000000000001",
+  "operation_id": "00000000-0000-4000-8000-000000000002",
+  "site_id": "00000000-0000-4000-8000-000000000003",
+  "source_server_id": "00000000-0000-4000-8000-000000000004",
+  "source": {
+    "domain": "shop.example.com",
+    "aliases": ["www.shop.example.com"],
+    "document_root": "/var/www/shop.example.com/htdocs",
+    "config_location": "/var/www/shop.example.com/wp-config.php",
+    "os": "ubuntu",
+    "os_version": "24.04",
+    "architecture": "amd64",
+    "wordops_version": "recorded-at-capture",
+    "php_version": "recorded-at-capture",
+    "database_version": "recorded-at-capture",
+    "dump_client_version": "recorded-at-capture"
+  },
+  "capture": {
+    "scope": "full",
+    "started_at": "2026-11-04T00:00:00Z",
+    "finished_at": "2026-11-04T00:10:00Z",
+    "consistency_mode": "online",
+    "cross_resource_atomicity": false,
+    "exclusions": ["wp-content/cache/"],
+    "coverage_gaps": []
+  },
+  "storage": {
+    "adapter": "restic-s3",
+    "repository_id": "example-repository",
+    "snapshot_id": "engine-assigned-id",
+    "encryption_key_id": "example-key-id",
+    "credential_values_included": false
+  },
+  "artifacts": {
+    "file_manifest": "files.manifest.enc",
+    "database_dump": "database.sql.enc",
+    "environment_manifest": "environment.json.enc",
+    "site_config": "site-config.enc",
+    "artifact_digests": "recorded-by-the-format-adapter"
+  },
+  "publication": {
+    "state": "draft",
+    "complete": false,
+    "commit_record": null
+  },
+  "assurance": {
+    "transfer": "not_checked",
+    "archive_integrity": "not_checked",
+    "database_consistency": "not_checked",
+    "restore_test": "not_checked",
+    "security_scan": "not_checked",
+    "findings": []
+  },
+  "restore_policy": {
+    "default_integrations": "disabled",
+    "regenerate_database_credentials": true,
+    "regenerate_wordpress_salts": true,
+    "require_target_inventory": true,
+    "require_checkpoint_for_replace": true
+  }
+}
