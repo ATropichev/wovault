@@ -6,4 +6,7 @@ export PATH="$repo_root/scripts:$PATH"
 agentmarshal validate
 openspec validate --all --strict --no-interactive
 python3 -m json.tool examples/recovery-manifest.json >/dev/null
+python3 -B -m unittest discover -s lab/tests -v
+python3 -B lab/evidence/validate.py --selftest
+python3 -B lab/fixtures/generate.py --check
 git diff --check
