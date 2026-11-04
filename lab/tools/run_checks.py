@@ -98,12 +98,24 @@ def sanitize(data):
     return data
 
 
+def sanitize_report(value):
+    """Sanitize every report string before JSON escaping and publication."""
+    if isinstance(value, str):
+        return sanitize(value.encode("utf-8")).decode("utf-8")
+    if isinstance(value, list):
+        return [sanitize_report(item) for item in value]
+    if isinstance(value, dict):
+        return {sanitize_report(key): sanitize_report(item)
+                for key, item in value.items()}
+    return value
+
+
 class Artifacts:
     """Retained evidence files for one report, written directly into the
     publish directory so report paths match committed locations."""
 
     def __init__(self, dest_dir):
-        self.dest_dir = Path(dest_dir)
+        self.dest_dir = resolve_publish(dest_dir)
         self.dest_dir.mkdir(parents=True, exist_ok=True)
         self.entries = []
 
@@ -111,7 +123,7 @@ class Artifacts:
         if isinstance(data, str):
             data = data.encode("utf-8")
         data = sanitize(data)
-        path = self.dest_dir / name
+        path = resolve_publish(self.dest_dir / name)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
         entry = {"name": name, "sha256": sha256_bytes(data),
@@ -209,10 +221,10 @@ def finalize(report, artifacts, publish_dir, cleanup_block=None):
         report["cleanup"] = cleanup_block
     report["artifacts"] = [
         {"path": e["path"], "sha256": e["sha256"]} for e in artifacts.entries]
-    dest = Path(publish_dir)
+    dest = resolve_publish(publish_dir)
     dest.mkdir(parents=True, exist_ok=True)
-    rpath = dest / f"{report['report_id']}.json"
-    rpath.write_text(json.dumps(report, indent=2, sort_keys=False) + "\n",
+    rpath = resolve_publish(dest / f"{report['report_id']}.json")
+    rpath.write_text(json.dumps(sanitize_report(report), indent=2, sort_keys=False) + "\n",
                      encoding="utf-8")
     rep = evidence_validate.validate(json.loads(rpath.read_text()),
                                      evidence_validate.load_json(LAB / "targets.json"))
@@ -1101,7 +1113,9 @@ def resolve_publish(path):
     if not p.is_absolute():
         p = REPO_ROOT / p
     p = p.resolve()
-    base = PUBLISH_DIR.resolve()
+    # Compare against the lexical root: resolving an owned root would grant
+    # ownership to the target of a symlink replacing that root or an ancestor.
+    base = Path(os.path.abspath(PUBLISH_DIR))
     if p == base or base in p.parents:
         return p
     raise labctl.Refused(f"--publish {path} resolves outside "

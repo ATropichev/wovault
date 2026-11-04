@@ -64,6 +64,9 @@ python3 lab/fixtures/generate.py --check           # compare vs expected/
 python3 lab/evidence/validate.py REPORT.json --summary
 python3 lab/evidence/validate.py --selftest
 
+# publication ownership, error-report sanitization and malformed-input regressions
+python3 -B -m unittest discover -s lab/tests -v
+
 # run all protocol checks (tasks 1.1–1.4); reports land in lab/evidence/runs/
 python3 lab/tools/run_checks.py all
 

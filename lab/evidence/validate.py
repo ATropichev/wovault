@@ -120,8 +120,9 @@ def check_evidence(items, where, rep):
             continue
         check_no_extra(e, {"kind", "path", "sha256", "note"}, w, rep)
         kind = e.get("kind")
-        if kind not in EVIDENCE_KINDS:
+        if not isinstance(kind, str) or kind not in EVIDENCE_KINDS:
             rep.err(w, f"kind must be one of {sorted(EVIDENCE_KINDS)}")
+            continue
             kind = None
         if "path" in e and not (isinstance(e["path"], str) and e["path"]):
             rep.err(w, "path must be a non-empty string")
@@ -186,7 +187,7 @@ def check_scenario(s, i, rep):
     if verdict is None:
         rep.err(w, "missing required field 'verdict'")
         return
-    if verdict not in VERDICTS:
+    if not isinstance(verdict, str) or verdict not in VERDICTS:
         rep.err(w, f"verdict '{verdict}' is not one of {sorted(VERDICTS)}")
         return
     has_actual = "actual" in s
@@ -218,7 +219,7 @@ def check_scenario(s, i, rep):
             rep.err(w, "dimensions must be a non-empty array of assurance keys")
         else:
             for i, d in enumerate(dims):
-                if d not in ASSURANCE_KEYS:
+                if not isinstance(d, str) or d not in ASSURANCE_KEYS:
                     rep.err(w, f"dimensions[{i}] '{d}' is not an assurance key")
 
 
@@ -230,7 +231,7 @@ def check_executor(ex, rep):
     check_no_extra(ex, {"actor", "profile", "environment"}, w, rep)
     if not isinstance(ex.get("actor"), str) or not ex["actor"]:
         rep.err(w, "actor must be a non-empty string")
-    if ex.get("profile") not in PROFILES:
+    if not isinstance(ex.get("profile"), str) or ex["profile"] not in PROFILES:
         rep.err(w, f"profile must be one of {sorted(PROFILES)}")
     env = ex.get("environment")
     if not isinstance(env, dict):
@@ -257,7 +258,7 @@ def check_target(t, rep, targets_doc):
     check_no_extra(t, {"name", "kind", "authorized", "roles"}, w, rep)
     if not isinstance(t.get("name"), str) or not t["name"]:
         rep.err(w, "name must be a non-empty string")
-    if t.get("kind") not in TARGET_KINDS:
+    if not isinstance(t.get("kind"), str) or t["kind"] not in TARGET_KINDS:
         rep.err(w, f"kind must be one of {sorted(TARGET_KINDS)}")
     if t.get("authorized") is not True:
         rep.err(w, "authorized must be true; unauthorized targets cannot produce evidence")
@@ -281,14 +282,14 @@ def check_assurance(a, dim_tested, dim_passed, rep):
     for k, v in a.items():
         if k not in ASSURANCE_KEYS:
             rep.err(w, f"unexpected assurance key '{k}'")
-        elif v not in ASSURANCE_STATES:
+        elif not isinstance(v, str) or v not in ASSURANCE_STATES:
             rep.err(w, f"'{k}' must be one of {sorted(ASSURANCE_STATES)}")
     missing = sorted(ASSURANCE_KEYS - set(a))
     if missing:
         rep.err(w, f"must declare all six dimensions explicitly; "
                    f"missing: {missing}")
     for k, v in a.items():
-        if k not in ASSURANCE_KEYS:
+        if k not in ASSURANCE_KEYS or not isinstance(v, str):
             continue
         if v == "passed" and k not in dim_passed:
             rep.err(w, f"'{k}'=passed requires a tested-pass scenario "
@@ -379,8 +380,10 @@ def validate(doc, targets_doc=None, verify_artifacts=True):
     for s in scenarios:
         if not isinstance(s, dict):
             continue
-        dims = {d for d in (s.get("dimensions") or []) if d in ASSURANCE_KEYS}
-        if s.get("verdict") in TESTED:
+        raw_dims = s.get("dimensions")
+        dims = {d for d in raw_dims if isinstance(d, str) and d in ASSURANCE_KEYS} \
+            if isinstance(raw_dims, list) else set()
+        if isinstance(s.get("verdict"), str) and s["verdict"] in TESTED:
             dim_tested |= dims
         if s.get("verdict") == "tested-pass":
             dim_passed |= dims
@@ -422,7 +425,7 @@ def validate(doc, targets_doc=None, verify_artifacts=True):
             for k in ("resources_removed", "refused", "leftovers"):
                 if k in c and not (isinstance(c[k], list) and all(isinstance(x, str) for x in c[k])):
                     rep.err(w, f"'{k}' must be an array of strings")
-    if verify_artifacts:
+    if verify_artifacts and not rep.errors:
         verify_artifact_paths(doc, rep)
     return rep
 
@@ -430,7 +433,7 @@ def validate(doc, targets_doc=None, verify_artifacts=True):
 def verdict_summary(doc):
     counts = {v: 0 for v in sorted(VERDICTS)}
     for s in doc.get("scenarios", []):
-        if isinstance(s, dict) and s.get("verdict") in counts:
+        if isinstance(s, dict) and isinstance(s.get("verdict"), str) and s["verdict"] in counts:
             counts[s["verdict"]] += 1
     return counts
 
