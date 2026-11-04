@@ -1,6 +1,6 @@
 # G0-01 — existing-product trials: licence/API inventory and shared protocol
 
-Status: **documentary preparation completed under CR-003** (primary sources
+Status: **documentary preparation under CR-003** (primary sources
 read 2026-11-05). No product was installed, executed or restored; no release
 or binary is selected. This document prepares the hands-on work for tasks
 2.1–2.4 of `openspec/changes/validate-g0-feasibility/tasks.md`; those tasks
@@ -28,7 +28,7 @@ supported version.
 
 ## Actual runs under this contract
 
-Read-only HTTPS GET requests on 2026-11-05 (UTC). GitHub content came from
+Read-only HTTPS GET requests on 2026-11-05 (Asia/Vladivostok, UTC+10). GitHub content came from
 raw/API endpoints (file contents plus licence-detection metadata); Reaver
 pages were fetched directly over HTTPS and returned HTTP 200. No product
 binary, installer, agent or demo was downloaded or executed, and no account
@@ -60,8 +60,8 @@ were not selected or fetched.
   limits. The Free edition is limited to **evaluation and non-commercial
   use**, **one site** and **local storage only**. Paid tiers add offsite
   destinations, the REST API and the MCP server. The terms prohibit
-  redistribution, reverse engineering and providing a managed backup
-  service to third parties. Anonymous product statistics default on with
+  redistribution and reverse engineering; providing a managed backup
+  service to third parties requires a separate agreement. Anonymous product statistics default on with
   an opt-out; paid licences require registration.
   [Terms](https://reaverbackup.com/terms),
   [pricing](https://reaverbackup.com/pricing).
@@ -127,8 +127,11 @@ were not selected or fetched.
   is a subscription instrument: production use of the covered parts
   requires a valid Duplicati Inc subscription for the correct features and
   seats; MIT applies only to parts distributed as "Duplicati Inc OSS" or
-  as client-side assets. Any integration assessment must first enumerate
+  as client-side assets. The separate licence permits copying and modification
+  for development/testing without a subscription; feature activation and the
+  selected binary's component inventory still need verification. Any integration assessment must first enumerate
   which planned touchpoints resolve to `proprietary/` paths.
+  [Separate licence at the inspected revision](https://github.com/duplicati/duplicati/blob/7d68b1f78df2a9152d188fa5e39ca9839a435ce4/proprietary/LICENSE).
 - **API.** `Duplicati/WebserverCore/DuplicatiWebserver.cs` at the pinned
   commit shows an ASP.NET Core (Kestrel) server with JWT bearer
   authentication and Swagger/OpenAPI registration gated behind `#if
@@ -146,8 +149,8 @@ were not selected or fetched.
   installation and `Duplicati.CommandLine.RecoveryTool` for damaged
   backends
   ([disaster recovery](https://docs.duplicati.com/using-tools/disaster-recovery)).
-- **Repository vs release.** Release installers bundle a .NET runtime and
-  third-party libraries under their own licences; combined with the
+- **Repository vs release.** Check which .NET runtime and third-party libraries
+  the selected distribution supplies or requires, under their own licences; combined with the
   `proprietary/` subtree, a per-artifact licence inventory is required for
   whichever release is pinned.
 
@@ -206,7 +209,10 @@ mandatory set.
   run a full capture of files plus database, then a scheduled run and an
   interrupted run. Record completeness labelling, separate assurance
   states, per-site failure isolation and which destinations the licence
-  tier allows. BKP-01–08, VER-01/02, UI-02; secondary AC-05–09/13/14/34.
+  tier allows. Record bulk-transfer direction, where the backup engine runs
+  and which host can access storage/encryption keys. An agent-driven push
+  does not establish compliance with WOVault's required SSH-pull boundary
+  (BKP-04). BKP-01–08, VER-01/02, UI-02; secondary AC-05–09/13/14/34.
 - **P3 — S3 clean-target restore.** Make `source` genuinely unavailable;
   attempt restore to `clean-target`. Record exactly which steps the
   product automates (stack provisioning, vhost, database create/import,
@@ -274,8 +280,8 @@ Totals across the six scenario probes: **8 documented, 10 unknown** across
    pinned artifacts or an explicit egress allowance.
 6. **Integration licence assessments.** Duplicati `proprietary/`
    touchpoints; Backrest GPL obligations for embedding or forking;
-   Reaver has no public source, so deeper reuse questions are themselves
-   blocked on vendor material.
+   no public Reaver source was located in this review, so deeper reuse
+   questions await vendor material rather than a claim that no source exists.
 
 ## Remaining technical unknowns
 
