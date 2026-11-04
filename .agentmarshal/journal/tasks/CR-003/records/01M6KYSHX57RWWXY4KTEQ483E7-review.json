@@ -1,0 +1,108 @@
+{
+  "artifacts": [
+    {
+      "hash": "dfbb8c5929bf28757395038f62b9ad614ef1f43629f2036d7027c184c1cfa93b",
+      "ref": ".agentmarshal/journal/tasks/CR-003/artifacts/01M6KYSHX57RWWXY4KTEQ483E7-review.md"
+    }
+  ],
+  "created_at": "2026-11-04T18:57:55.109461Z",
+  "findings": [],
+  "previous_review": "01M6KYGG74J75PRGATEB4MNXH5",
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "78c6fbfa0d66e9affeffb1b4b08c7d7cb240b962",
+  "reviewed_contract": "11f4c3b3f9bf58ff10d0af8280004454e90452cafead3d43ade82f2f3169d0a4",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-003",
+  "tool_version": "0.6.0",
+  "verdict": "approved",
+  "verification": {
+    "executed": [
+      {
+        "result": "Exit 0; all 25 examples produced their expected acceptance or rejection.",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "Exit 0; local-sandbox executable; both other targets pending.",
+        "what": "python3 -B lab/tools/labctl.py verify-allowlist"
+      },
+      {
+        "result": "Exit 0; complete coverage of two files; no canary hits or errors.",
+        "what": "python3 -B lab/tools/labctl.py scan --paths docs/development.md docs/research/g0-01-solution-protocol.md"
+      },
+      {
+        "result": "No trailing whitespace; no workstation paths in the new report; development.md contains an existing illustrative /tmp path. Fixture digest matches 24d89b25; fixture trees constructed in memory; tasks 2.1–2.4 remain unchecked.",
+        "what": "Read-only Python checks of changed documents, fixture pins and OpenSpec task states"
+      },
+      {
+        "result": "Retrieved; descriptions support the corresponding API observations.",
+        "what": "Web retrieval of Backrest API, Duplicati ServerUtil and Duplicati issue #4201"
+      },
+      {
+        "result": "Stopped at the missing AgentMarshal installation; suite did not run.",
+        "what": "scripts/check with repository scripts on PATH and AGENTMARSHAL_ACTOR=agent-codex"
+      },
+      {
+        "result": "Stopped because the snapshot has no Git repository metadata; candidate identity relies on the supplied SHA.",
+        "what": "git status --short and Git identity inspection"
+      },
+      {
+        "result": "Unavailable through web retrieval; Python requests failed DNS resolution. No contradiction established.",
+        "what": "Web and Python HTTPS attempts to retrieve pinned licence sources and Reaver pages"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Installs files; prohibited by the read-only review."
+      },
+      {
+        "what": "Canonical journal comparison and AgentMarshal brief/gate",
+        "why": "Journal and pinned CLI installation absent."
+      },
+      {
+        "what": "Mutating regression, fixture-generation and isolation suites",
+        "why": "Read-only review; no lab-tooling changes in this candidate."
+      },
+      {
+        "what": "SHA-bound CI verification",
+        "why": "No actual candidate-bound CI result supplied or retrieved."
+      }
+    ],
+    "read": [
+      "Supplied CR-003 contract and diff",
+      "AGENTS.md",
+      "README.md",
+      "docs/PRD.md",
+      "docs/research/landscape.md",
+      "docs/roadmap.md",
+      "docs/threat-model.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "docs/research/g0-00-lab-and-evidence-protocol.md",
+      "docs/research/g0-01-solution-protocol.md",
+      "docs/research/experiment-template.md",
+      "docs/decisions/0001-scope-and-engines.md",
+      "openspec/changes/validate-g0-feasibility/tasks.md",
+      "openspec/changes/validate-g0-feasibility/specs/*/spec.md",
+      "openspec/specs/ (only .gitkeep)",
+      ".agentmarshal/extensions/openspec.toml",
+      "scripts/check and tooling wrappers",
+      "lab/fixtures/pins.json",
+      "lab/targets.json",
+      "lab/evidence/report.schema.json",
+      "lab/evidence/validate.py",
+      "lab/tools/labctl.py ownership/reset/cleanup implementation",
+      "lab/tests/test_publication.py"
+    ]
+  }
+}

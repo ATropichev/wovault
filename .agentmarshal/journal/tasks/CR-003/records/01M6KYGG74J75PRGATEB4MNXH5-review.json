@@ -1,0 +1,110 @@
+{
+  "advisory_findings": [
+    "A1"
+  ],
+  "artifacts": [
+    {
+      "hash": "b4022dc409bb526943d623887d88648f832c802c1582294c460cd686034a4e28",
+      "ref": ".agentmarshal/journal/tasks/CR-003/artifacts/01M6KYGG74J75PRGATEB4MNXH5-review.md"
+    }
+  ],
+  "classes": {
+    "A1": "test-gap"
+  },
+  "created_at": "2026-11-04T18:52:58.468170Z",
+  "evidence": {
+    "A1": "docs/research/g0-01-solution-protocol.md:199–204; docs/roadmap.md AC-01 specifies separate root-password, SSH key+passphrase and sudo-login cases."
+  },
+  "findings": [],
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "45ec02ce8ffe6d3921372d6a261bad5c1559219b",
+  "reviewed_contract": "11f4c3b3f9bf58ff10d0af8280004454e90452cafead3d43ade82f2f3169d0a4",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-003",
+  "tool_version": "0.6.0",
+  "verdict": "approved",
+  "verification": {
+    "executed": [
+      {
+        "result": "Passed: all three fixture manifests matched.",
+        "what": "python3 -B lab/fixtures/generate.py --check"
+      },
+      {
+        "result": "Passed: 2 valid examples accepted; 23 invalid examples rejected.",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "Passed: valid JSON.",
+        "what": "python3 -m json.tool examples/recovery-manifest.json"
+      },
+      {
+        "result": "Fixture hash prefix and seed matched; 8 documented/10 unknown/0 tested cells; tasks 2.1–2.4 unchecked; no full canary values or private workstation paths found. Existing /tmp/wovault-task.md is a generic command example.",
+        "what": "Read-only Python checks of fixture hash/seed, scenario counts, task states and changed-document path/canary content"
+      },
+      {
+        "result": "Stopped at AgentMarshal wrapper: pinned installation missing. Full suite did not run.",
+        "what": "scripts/check with repository scripts on PATH and AGENTMARSHAL_ACTOR=agent-codex"
+      },
+      {
+        "result": "Snapshot is not a Git repository; status failed and commit identification did not execute.",
+        "what": "Git status and commit-identification attempt"
+      },
+      {
+        "result": "Retrieved; API summaries corroborated.",
+        "what": "Web retrieval of Backrest API docs, Duplicati issue #4201 and ServerUtil docs"
+      },
+      {
+        "result": "Web retrieval unavailable/cache misses; urllib requests failed DNS resolution. These source claims remain independently unverified.",
+        "what": "Web retrieval of pinned licence files and Reaver terms/API; urllib HTTPS retry for Backrest LICENSE, Duplicati LICENSE/proprietary LICENSE and Reaver terms"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Would write files; review is read-only."
+      },
+      {
+        "what": "Canonical journal verification, full OpenSpec validation, Git diff checks and SHA-bound CI verification",
+        "why": "Journal, Git metadata, pinned installations and CI attestation are unavailable in this snapshot."
+      },
+      {
+        "what": "Product trials and mutating lab regression/isolation checks",
+        "why": "Documentary candidate; no product execution or lab mutation was performed."
+      }
+    ],
+    "read": [
+      "Supplied CR-003 contract and diff",
+      "README.md",
+      "docs/PRD.md",
+      "docs/threat-model.md",
+      "docs/roadmap.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "docs/research/landscape.md",
+      "docs/research/g0-00-lab-and-evidence-protocol.md",
+      "docs/research/g0-01-solution-protocol.md",
+      "docs/research/experiment-template.md",
+      "docs/decisions/0001-scope-and-engines.md",
+      "openspec/changes/validate-g0-feasibility/tasks.md",
+      "openspec/changes/validate-g0-feasibility/design.md",
+      "openspec/changes/validate-g0-feasibility/specs/*/spec.md",
+      "openspec/specs/ (only .gitkeep)",
+      ".agentmarshal/extensions/openspec.toml",
+      "scripts/setup-tools, scripts/check and CLI wrappers",
+      "lab/fixtures/pins.json",
+      "lab/targets.json",
+      "lab/evidence/report.schema.json",
+      "lab/evidence/validate.py (first 235 lines)"
+    ]
+  }
+}
