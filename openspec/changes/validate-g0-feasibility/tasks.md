@@ -1,15 +1,18 @@
 # Tasks
 
-No experiments have been completed. Inputs and dependency graph are in
+G0-00's local synthetic protocol is complete, with the merged CR-001 journal and
+[run evidence](../../../docs/research/g0-00-lab-and-evidence-protocol.md).
+The optional container profile remains blocked; real WordOps/product qualification
+and the later G0 experiments remain open. Inputs and dependency graph are in
 `docs/implementation-plan.md`; the template is `docs/research/experiment-template.md`.
 Each item produces a report safe for publication and the stated verification.
 
 ## 1. G0-00 — reproducible lab
 
-- [ ] 1.1 Record authorized disposable targets, resource budget, topology and cleanup; verify that the executable allowlist contains no production targets.
-- [ ] 1.2 Create a synthetic WordPress/WooCommerce/writer/drift fixture generator and pin versions; repeat generation and compare expected manifests/digests.
-- [ ] 1.3 Define an evidence JSON schema with requirement/AC mapping, expected/actual/verdict and measurements; test a valid report and rejection of reports missing mandatory evidence.
-- [ ] 1.4 Test runtime isolation, baseline reset and canary redaction; retain the AC-26/33 report and actual cleanup result.
+- [x] 1.1 Record authorized disposable targets, resource budget, topology and cleanup; verify that the executable allowlist contains no production targets.
+- [x] 1.2 Create a synthetic WordPress/WooCommerce/writer/drift fixture generator and pin versions; repeat generation and compare expected manifests/digests.
+- [x] 1.3 Define an evidence JSON schema with requirement/AC mapping, expected/actual/verdict and measurements; test a valid report and rejection of reports missing mandatory evidence.
+- [x] 1.4 Test runtime isolation, baseline reset and canary redaction; retain the AC-26/33 report and actual cleanup result.
 
 ## 2. G0-01 — existing-product comparison
 

@@ -106,6 +106,14 @@ The main repository holds only material safe for public reading. Do not run
 ## Setup verification
 
 `scripts/check` validates journal integrity, OpenSpec in strict mode, illustrative
-manifest syntax and diff whitespace. It is not a backup/restore test or security
-audit. Lab experiments and AC-01–35 still need to run. A full governed loop requires
+manifest syntax and diff whitespace. It also runs the laboratory regression tests,
+canonical evidence-report examples and pinned synthetic fixture checks. The required
+`specifications` job runs the same command and fails when a required command fails.
+These checks require no private drivers or remote targets. The optional JSON Schema
+comparison test is explicitly skipped when `jsonschema` is unavailable; a skip is
+not reported as a passed comparison.
+
+G0-00's local namespace protocol has recorded run evidence. The full mutating
+namespace suite is run separately from these CI checks. WordOps/engine experiments
+and product AC-01–35 qualification remain pending. A full governed loop requires
 an actual candidate commit, independent review and confirmed checks.

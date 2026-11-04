@@ -10,7 +10,7 @@ reviewed candidate remains identifiable in the resulting history.
 
 | Context | Publisher | Meaning |
 | --- | --- | --- |
-| `specifications` | GitHub Actions | Public journal, OpenSpec, manifest and whitespace validation |
+| `specifications` | GitHub Actions | Journal, OpenSpec, manifest, lab regressions/report examples/pinned fixtures and whitespace validation |
 | `agentmarshal-gate` | GitHub Actions | Contract, scope, append-only journal and lifecycle checks on the exact PR head |
 | `agentmarshal-review` | Trusted maintainer | Full AgentMarshal gate, with actual exact-SHA CI and required independent review evidence |
 
