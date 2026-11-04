@@ -1,0 +1,11 @@
+{
+  "contract": "11f4c3b3f9bf58ff10d0af8280004454e90452cafead3d43ade82f2f3169d0a4",
+  "created_at": "2026-11-04T18:23:17.587704Z",
+  "record_type": "opened",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "schema": 7,
+  "source": "live",
+  "task": "CR-003",
+  "tool_version": "0.6.0"
+}
