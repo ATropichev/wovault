@@ -1,0 +1,146 @@
+WOV-PAYLOAD-START
+{
+  "netns": "net:[4026532686]",
+  "mntns": "mnt:[4026532681]",
+  "pidns": "pid:[4026532684]",
+  "egress": [
+    {
+      "target": "192.0.2.10:80",
+      "label": "source-role http",
+      "reached": false,
+      "error": "OSError:[Errno 101] Network is unreachable"
+    },
+    {
+      "target": "198.51.100.20:443",
+      "label": "storage-s3 https",
+      "reached": false,
+      "error": "OSError:[Errno 101] Network is unreachable"
+    },
+    {
+      "target": "198.51.100.30:21",
+      "label": "storage-ftp control",
+      "reached": false,
+      "error": "OSError:[Errno 101] Network is unreachable"
+    },
+    {
+      "target": "203.0.113.5:25",
+      "label": "external smtp",
+      "reached": false,
+      "error": "OSError:[Errno 101] Network is unreachable"
+    },
+    {
+      "target": "203.0.113.9:443",
+      "label": "payment/webhook https",
+      "reached": false,
+      "error": "OSError:[Errno 101] Network is unreachable"
+    },
+    {
+      "target": "smtp.example.test",
+      "label": "smtp hostname resolution",
+      "resolved": false,
+      "error": "gaierror:[Errno -3] Temporary failure in name resolution"
+    },
+    {
+      "target": "hooks.example.test",
+      "label": "webhook hostname resolution",
+      "resolved": false,
+      "error": "gaierror:[Errno -3] Temporary failure in name resolution"
+    }
+  ],
+  "writes": [
+    {
+      "path": "/site/payload-write.txt",
+      "label": "write inside docroot (allowed)",
+      "allowed": true,
+      "wrote": true
+    },
+    {
+      "path": "/escape-marker.txt",
+      "label": "write to filesystem root",
+      "allowed": false,
+      "wrote": false,
+      "error": "OSError:[Errno 30] Read-only file system: '/escape-marker.txt'"
+    },
+    {
+      "path": "/etc/payload-marker",
+      "label": "write into /etc",
+      "allowed": false,
+      "wrote": false,
+      "error": "OSError:[Errno 30] Read-only file system: '/etc/payload-marker'"
+    },
+    {
+      "path": "/usr/payload-marker",
+      "label": "write into /usr",
+      "allowed": false,
+      "wrote": false,
+      "error": "OSError:[Errno 30] Read-only file system: '/usr/payload-marker'"
+    },
+    {
+      "path": "/site/../escape2.txt",
+      "label": "docroot parent traversal",
+      "allowed": false,
+      "wrote": false,
+      "error": "OSError:[Errno 30] Read-only file system: '/site/../escape2.txt'"
+    },
+    {
+      "path": "/tmp/payload-marker",
+      "label": "write into /tmp",
+      "allowed": false,
+      "wrote": false,
+      "error": "OSError:[Errno 30] Read-only file system: '/tmp/payload-marker'"
+    },
+    {
+      "path": "/proc/payload-marker",
+      "label": "write into /proc",
+      "allowed": false,
+      "wrote": false,
+      "error": "FileNotFoundError:[Errno 2] No such file or directory: '/proc/payload-marker'"
+    }
+  ],
+  "reads": [
+    {
+      "path": "<host-sentinel>",
+      "label": "harness-planted host sentinel",
+      "read": false,
+      "error": "FileNotFoundError:[Errno 2] No such file or directory: '<repo>/lab-output/runs/20261104T123611Z/isolation/ns/host-sentinel.txt'"
+    },
+    {
+      "path": "/etc/shadow",
+      "label": "host account database",
+      "read": false,
+      "error": "FileNotFoundError:[Errno 2] No such file or directory: '/etc/shadow'"
+    },
+    {
+      "path": "/etc/hostname",
+      "label": "host identity file",
+      "read": false,
+      "error": "FileNotFoundError:[Errno 2] No such file or directory: '/etc/hostname'"
+    },
+    {
+      "path": "/proc/1/root/etc/hostname",
+      "label": "monitor process root",
+      "read": false,
+      "error": "FileNotFoundError:[Errno 2] No such file or directory: '/proc/1/root/etc/hostname'"
+    }
+  ],
+  "env": {
+    "names": [
+      "HOME",
+      "LC_CTYPE",
+      "PATH",
+      "PWD"
+    ],
+    "marker_env": "WOV_HOST_MARKER",
+    "marker_env_seen": false,
+    "unexpected": []
+  },
+  "procs": {
+    "pids": [
+      1,
+      2
+    ],
+    "self_pid": 2,
+    "count": 2,
+    "beyond_sandbox": []
+  }
+}

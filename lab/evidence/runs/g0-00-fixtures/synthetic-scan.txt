@@ -1,0 +1,2 @@
+bad_ips=[]
+bad_domains=[]

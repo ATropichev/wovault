@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wovault.example.invalid/schemas/g0-evidence-report-1.json",
+  "title": "G0 experiment evidence report",
+  "description": "Machine-readable evidence for G0 experiments. Enforced by lab/evidence/validate.py (the canonical implementation; this document is the published contract). A verdict of planned, documented, blocked or unknown never counts as a passed check; only tested-pass does.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "report_id", "task", "change", "generated_at",
+    "executor", "target", "requirement_ids", "ac_ids", "scenarios", "assurance"
+  ],
+  "properties": {
+    "schema_version": {"const": "g0-evidence/1"},
+    "report_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"},
+    "task": {"type": "string", "pattern": "^CR-[0-9]+$"},
+    "change": {"type": "string", "minLength": 1},
+    "generated_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "profile", "environment"],
+      "properties": {
+        "actor": {"type": "string", "minLength": 1},
+        "profile": {"enum": ["local-namespace", "container-set", "remote-vps"]},
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["os", "arch"],
+          "properties": {
+            "os": {"type": "string", "minLength": 1},
+            "arch": {"type": "string", "minLength": 1},
+            "kernel": {"type": "string"},
+            "python": {"type": "string"},
+            "tools": {"type": "object", "additionalProperties": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind", "authorized"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["local-namespace", "container-set", "remote-vps"]},
+        "authorized": {"const": true},
+        "roles": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "requirement_ids": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^(S[1-6]|(REG|BKP|STO|VER|SEC|RST|UI|NFR)-[0-9]{2})$"}
+    },
+    "ac_ids": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^AC-[0-9]{2}$"}
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/scenario"}
+    },
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transfer", "completeness", "consistency", "integrity",
+                   "restore_test", "security"],
+      "comment": "All six dimensions are declared explicitly. The canonical validator additionally requires a tested-* scenario whose 'dimensions' declares a key before that key may be passed/failed/warning; not_checked and unsupported need no run.",
+      "properties": {
+        "transfer": {"$ref": "#/$defs/assurance_state"},
+        "completeness": {"$ref": "#/$defs/assurance_state"},
+        "consistency": {"$ref": "#/$defs/assurance_state"},
+        "integrity": {"$ref": "#/$defs/assurance_state"},
+        "restore_test": {"$ref": "#/$defs/assurance_state"},
+        "security": {"$ref": "#/$defs/assurance_state"}
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value", "unit"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "value": {"type": "number"},
+          "unit": {"type": "string", "minLength": 1},
+          "conditions": {"type": "string"}
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["performed", "verified"],
+      "properties": {
+        "performed": {"type": "boolean"},
+        "verified": {"type": "boolean"},
+        "ran_at": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+        "resources_removed": {"type": "array", "items": {"type": "string"}},
+        "refused": {"type": "array", "items": {"type": "string"}},
+        "leftovers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "notes": {"type": "string"}
+  },
+  "$defs": {
+    "assurance_state": {"enum": ["passed", "failed", "warning", "not_checked", "unsupported"]},
+    "utc_time": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "expected", "verdict"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"},
+        "title": {"type": "string"},
+        "expected": {"type": "string", "minLength": 1},
+        "fault_point": {"type": "string"},
+        "verdict": {"enum": ["planned", "documented", "tested-pass", "tested-fail", "blocked", "unknown"]},
+        "actual": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["summary", "exit_code", "ran_at", "duration_ms"],
+          "properties": {
+            "summary": {"type": "string", "minLength": 1},
+            "exit_code": {"type": "integer"},
+            "ran_at": {"$ref": "#/$defs/utc_time"},
+            "duration_ms": {"type": "number", "minimum": 0}
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind"],
+            "properties": {
+              "kind": {"enum": ["file", "log", "stdout", "digest", "command"]},
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "note": {"type": "string"}
+            },
+            "allOf": [
+              {
+                "if": {"properties": {"kind": {"enum": ["file", "log"]}}},
+                "then": {"required": ["path", "sha256"]},
+                "comment": "File and log evidence must be pinned by content digest; an undigested artifact is not evidence."
+              },
+              {
+                "if": {"properties": {"kind": {"const": "digest"}}},
+                "then": {"required": ["sha256"]}
+              },
+              {
+                "if": {"properties": {"kind": {"const": "command"}}},
+                "then": {"required": ["note"], "properties": {"note": {"minLength": 1}}},
+                "comment": "An empty command reference is not evidence."
+              },
+              {
+                "if": {"required": ["path"]},
+                "then": {"required": ["sha256"]},
+                "comment": "Any recorded path must be pinned by a content digest. The canonical validator also requires the path to be repository-relative, to exist and to match the digest."
+              }
+            ]
+          }
+        },
+        "blocker": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "dimensions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"enum": ["transfer", "completeness", "consistency",
+                             "integrity", "restore_test", "security"]},
+          "comment": "Assurance dimensions this scenario's run informs. A dimension may only leave not_checked/unsupported when a tested-* scenario declares it."
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "value", "unit"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "value": {"type": "number"},
+              "unit": {"type": "string", "minLength": 1},
+              "conditions": {"type": "string"}
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"verdict": {"enum": ["tested-pass", "tested-fail"]}}},
+          "then": {"required": ["actual", "evidence"], "properties": {"evidence": {"minItems": 1}}}
+        },
+        {
+          "if": {"properties": {"verdict": {"const": "blocked"}}},
+          "then": {"required": ["blocker"]}
+        },
+        {
+          "if": {"properties": {"verdict": {"const": "documented"}}},
+          "then": {"required": ["source"]}
+        },
+        {
+          "if": {"properties": {"verdict": {"enum": ["planned", "documented", "blocked", "unknown"]}}},
+          "then": {"not": {"required": ["actual"]}},
+          "comment": "A non-tested verdict must not carry run results; an actual/exit_code on an unknown or blocked scenario is a fabricated pass."
+        }
+      ]
+    }
+  }
+}

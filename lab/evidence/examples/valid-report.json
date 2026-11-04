@@ -1,0 +1,81 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "example-valid-001",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:00:00Z",
+  "executor": {
+    "actor": "example-actor",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "python": "3.13.5",
+      "tools": {"bwrap": "0.11.0"}
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true,
+    "roles": ["control"]
+  },
+  "requirement_ids": ["NFR-02", "VER-03"],
+  "ac_ids": ["AC-26", "AC-33"],
+  "scenarios": [
+    {
+      "id": "egress-denied",
+      "title": "Runtime egress is denied inside the isolated namespace",
+      "expected": "connect attempts to documentation-range addresses fail",
+      "verdict": "tested-pass",
+      "dimensions": ["restore_test"],
+      "actual": {
+        "summary": "connect to 192.0.2.10:80 and 203.0.113.5:443 failed with ENETUNREACH",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:00:01Z",
+        "duration_ms": 42
+      },
+      "evidence": [
+        {"kind": "file", "path": "lab/evidence/examples/artifact-sample.txt", "sha256": "9fb84f9af162ea6f79c276b4ae0f1c52ee9dc16c671197c22ad6aec58095827b", "note": "payload result JSON stand-in"},
+        {"kind": "command", "note": "bwrap --unshare-all --bind site /site python3 /site/payload.py"}
+      ]
+    },
+    {
+      "id": "container-profile",
+      "title": "Container execution profile",
+      "expected": "isolated containers wov-g000-* run the same checks",
+      "verdict": "blocked",
+      "blocker": "no Docker socket in this environment; coordinator-run profile"
+    },
+    {
+      "id": "wp-cron-behavior",
+      "title": "WordPress cron behavior under restore",
+      "expected": "documented upstream behavior informs later tests",
+      "verdict": "documented",
+      "source": "https://developer.wordpress.org/plugins/cron/"
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "passed",
+    "security": "not_checked"
+  },
+  "measurements": [
+    {"name": "payload_wall_time", "value": 42, "unit": "ms", "conditions": "local namespace, no network"}
+  ],
+  "artifacts": [
+    {"path": "lab/evidence/examples/artifact-sample.txt", "sha256": "9fb84f9af162ea6f79c276b4ae0f1c52ee9dc16c671197c22ad6aec58095827b", "note": "pinned sample artifact"}
+  ],
+  "cleanup": {
+    "performed": true,
+    "verified": true,
+    "ran_at": "2026-11-04T12:00:05Z",
+    "resources_removed": ["lab-output/example/"],
+    "refused": ["docs/"],
+    "leftovers": []
+  }
+}

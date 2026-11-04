@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-assurance-incomplete.json
+  - assurance: must declare all six dimensions explicitly; missing: ['security']

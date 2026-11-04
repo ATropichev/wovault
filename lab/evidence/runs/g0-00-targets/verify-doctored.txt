@@ -1,0 +1,6 @@
+executable: local-sandbox
+executable: sneaky-prod
+pending (not executable): wov-g000-containers
+pending (not executable): wov-g000-vps-pair
+ERROR targets[1] (sneaky-prod): address 192.0.2.99 is not loopback; only loopback/none/container-internal targets are executable
+allowlist: FAILED

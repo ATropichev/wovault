@@ -1,0 +1,387 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "g0-00-evidence-schema",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:36:12Z",
+  "executor": {
+    "actor": "agent-devin",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "python": "3.13.5",
+      "tools": {
+        "bwrap": "bubblewrap 0.12.0",
+        "unshare": "unshare from util-linux 2.41.5",
+        "docker": "Docker version 29.9.2, build a82e528"
+      }
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true,
+    "roles": [
+      "control",
+      "fixture-workspace",
+      "isolation-check",
+      "reset-check",
+      "canary-check"
+    ]
+  },
+  "requirement_ids": [
+    "VER-01",
+    "NFR-02"
+  ],
+  "ac_ids": [
+    "AC-26",
+    "AC-33"
+  ],
+  "scenarios": [
+    {
+      "id": "schema-document-loads",
+      "expected": "report.schema.json parses and declares the verdict enum and conditional tested/non-tested rules",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "['blocked', 'documented', 'planned', 'tested-fail', 'tested-pass', 'unknown']; 4",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 40.8
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/schema-load.txt",
+          "sha256": "b25f7b100a06bd334eb8dab5b81e11535b64d3360628b87380be0e03bb50df18"
+        }
+      ]
+    },
+    {
+      "id": "selftest-passes",
+      "expected": "every valid-* example validates and every err-* example is rejected",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "OK err-artifacts-path-escape.json: 1 error(s); OK err-artifacts-path-missing.json: 1 error(s); OK err-artifacts-type.json: 1 error(s); OK err-assurance-incomplete.json: 1 error(s); OK err-assurance-missing.json: 1 error(s); OK err-assurance-unbacked.json: 1 error(s); OK err-blocked-without-blocker.json: 1 error(s); OK err-blocker-type.json: 1 error(s); OK err-command-empty.json: 1 error(s); OK err-dimensions-invalid.json: 1 error(s); OK err-evidence-digest-type.json: 2 error(s); OK err-evidence-missing-digest.json: 3 error(s); OK err-evidence-path-missing.json: 1 error(s); OK err-evidence-path-tampered.json: 1 error(s); OK err-missing-required.json: 2 error(s); OK err-pass-without-actual.json: 1 error(s); OK err-pass-without-evidence.json: 1 error(s); OK err-scenario-missing-verdict.json: 1 error(s); OK err-stdout-empty.json: 1 error(s); OK err-target-roles-type.json: 1 error(s); OK err-tools-type.json: 1 error(s); OK err-unauthorized-target.json: 1 error(s); OK err-unknown-with-actual.json: 1 error(s); OK valid-report.json: valid; OK valid-unknown-report.json: valid",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 62.0
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/selftest.txt",
+          "sha256": "b114f2e3887f04acdc5aa7860bb68ec7a82221ff1d57796b37b94a2258c50153"
+        }
+      ]
+    },
+    {
+      "id": "missing-fields-rejected",
+      "expected": "a report missing required fields is rejected with named errors",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "exit=2:   - generated_at: must be an ISO-8601 UTC time ending in Z",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 80.1
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-missing.txt",
+          "sha256": "f3b45114bea8ee55a90fb2c614f32ea3adcd2fe0ae8b2e469e9a87d02e412ab7"
+        }
+      ]
+    },
+    {
+      "id": "pass-without-run-rejected",
+      "expected": "tested-pass without an actual run record or evidence is rejected",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "err-pass-without-actual.json: exit=2; err-pass-without-evidence.json: exit=2",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 62.0
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-fabricated-actual.txt",
+          "sha256": "351501f80931a087e30b181a314b351620ca6240adfe62099049a877d1f4b1c6"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-fabricated-evidence.txt",
+          "sha256": "84d6697af09223270347de8caf70d1e45c246d54f522fc9d594fcd2835c0d575"
+        }
+      ]
+    },
+    {
+      "id": "unknown-is-not-a-pass",
+      "expected": "an unknown verdict validates but counts as zero tested-pass scenarios, and unknown carrying run results is rejected",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "valid report with unknown accepted; tested-pass count=0; unknown-with-actual rejected exit=2",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 70.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/unknown-summary.txt",
+          "sha256": "1c6651b0f24064d947e2aa63c6cb09b4cfab6b2aabdfbd008b65706b5390f9d7"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-unknown-run.txt",
+          "sha256": "8bcbf98680bc3967b2b63197bf9ae1fc2aaae6beedcaced9ee4c9b404486af27"
+        }
+      ]
+    },
+    {
+      "id": "unauthorized-target-rejected",
+      "expected": "a report naming a non-allowlisted target is rejected",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "exit=2:   - target: name 'production-web-01' is not an authorized target in the allowlist",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 51.2
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-target.txt",
+          "sha256": "96a70ad19c6cc7fe709e0dfe914738381c55861348a7e907c1c9d4795c70d848"
+        }
+      ]
+    },
+    {
+      "id": "canonical-schema-agreement",
+      "expected": "the canonical validator never accepts a report the published schema rejects; every schema-invalid example is also canonical-invalid. The reverse is allowed where the canonical validator adds checks the schema cannot express (the targets.json allowlist cross-check)",
+      "fault_point": "canonical and published contract disagree (F2 class)",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "25 examples compared; schema-invalid but canonical-accepted: none",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 75.6
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/schema-agreement.txt",
+          "sha256": "436a312bc9825ac30494409b1b87ca3c9fa1724ea0033dee26d5c891959cad29"
+        }
+      ]
+    },
+    {
+      "id": "evidence-content-required",
+      "expected": "a tested verdict whose evidence is an empty command reference or an empty stdout entry is rejected",
+      "fault_point": "syntactically shaped but contentless evidence passes as execution proof",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "err-command-empty.json: exit=2; err-stdout-empty.json: exit=2",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 51.4
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-empty-command.txt",
+          "sha256": "7497f669650f52627b78dae4517ea2383bf577b570d956473ecb1ed50a844123"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-empty-stdout.txt",
+          "sha256": "6b7c3ca675b25e8b0ab849340fea14b2bb25da4c4d05b9b0724153da977dbcc6"
+        }
+      ]
+    },
+    {
+      "id": "artifact-existence-verified",
+      "expected": "reports citing missing, escaped or digest-mismatched artifact paths are rejected at validation time; the same files pass structural validation with the artifact check disabled, proving the rejection comes from artifact verification",
+      "fault_point": "a fabricated digest on a nonexistent or stale file is accepted as evidence",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "err-evidence-path-missing.json: exit=2; err-evidence-path-tampered.json: exit=2; err-artifacts-path-missing.json: exit=2; err-artifacts-path-escape.json: exit=2; --no-artifact-check exit=0 (0 shows the file is otherwise structurally valid)",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 63.6
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-evidence-path-missing.txt",
+          "sha256": "00ec97c07ba7c54b5fffddd462ace4a8065aeb4777262db6e1678199ec80feab"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-evidence-path-tampered.txt",
+          "sha256": "c1dbd2d789118ac02a40207afd9ae6ee14c4c1ce29eb6be6e6971ff3d29e26f2"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-artifacts-path-missing.txt",
+          "sha256": "2abc65dc413af5c10f4a7f24a75e9027c86270f8d171be4b26a73cd1831fe0f5"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-artifacts-path-escape.txt",
+          "sha256": "c54bdc9c582edd3d45d8fbb9a385d55a0e77f3a687a88e0cfa4da48cb5a28c2a"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/artifact-check-disabled.txt",
+          "sha256": "6e8b116044dd5ce54a6b36466951bff6128e94e129e9f9dd487c1babd0ace50e"
+        }
+      ]
+    },
+    {
+      "id": "assurance-dimensions-explicit",
+      "expected": "a report without all six assurance dimensions or with a passed/failed/warning state lacking a dimension-declaring tested scenario is rejected; the valid example's restore_test=passed is backed by a dimension-linked tested-pass",
+      "fault_point": "an unchecked dimension is silently promoted by an unrelated pass",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "err-assurance-missing.json: exit=2; err-assurance-incomplete.json: exit=2; err-assurance-unbacked.json: exit=2; err-dimensions-invalid.json: exit=2; valid-report exit=0",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:13Z",
+        "duration_ms": 81.8
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-missing.txt",
+          "sha256": "6ce66cf52cfe56fb1d6cbdce4f42087984a0dca6dce972f2eecbee1ddeb86281"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-incomplete.txt",
+          "sha256": "af31d97419029f1afdf59b6f11bf913676a6712f37ec923fa0ef27a2e75c1797"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-unbacked.txt",
+          "sha256": "06527855d772c60aefeb94a39a34757c966f01987b7e9fdc8ffe142f68b221f4"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/reject-dimensions-invalid.txt",
+          "sha256": "a92556c0abbea81cde34a03f0bbb60a6ff5e2f369f249800bcdf352e53783877"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-evidence-schema/valid-assurance.txt",
+          "sha256": "ba8885b0b4080fc7f81c9bbe12b4704e95d4fbd8889b222f981a221c455b651f"
+        }
+      ]
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  },
+  "cleanup": {
+    "performed": true,
+    "verified": true,
+    "ran_at": "2026-11-04T12:36:14Z",
+    "resources_removed": [
+      "lab-output/runs/20261104T123611Z/schema"
+    ],
+    "refused": [],
+    "leftovers": []
+  },
+  "artifacts": [
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/schema-load.txt",
+      "sha256": "b25f7b100a06bd334eb8dab5b81e11535b64d3360628b87380be0e03bb50df18"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/selftest.txt",
+      "sha256": "b114f2e3887f04acdc5aa7860bb68ec7a82221ff1d57796b37b94a2258c50153"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-missing.txt",
+      "sha256": "f3b45114bea8ee55a90fb2c614f32ea3adcd2fe0ae8b2e469e9a87d02e412ab7"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-fabricated-actual.txt",
+      "sha256": "351501f80931a087e30b181a314b351620ca6240adfe62099049a877d1f4b1c6"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-fabricated-evidence.txt",
+      "sha256": "84d6697af09223270347de8caf70d1e45c246d54f522fc9d594fcd2835c0d575"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/unknown-summary.txt",
+      "sha256": "1c6651b0f24064d947e2aa63c6cb09b4cfab6b2aabdfbd008b65706b5390f9d7"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-unknown-run.txt",
+      "sha256": "8bcbf98680bc3967b2b63197bf9ae1fc2aaae6beedcaced9ee4c9b404486af27"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-target.txt",
+      "sha256": "96a70ad19c6cc7fe709e0dfe914738381c55861348a7e907c1c9d4795c70d848"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/schema-agreement.txt",
+      "sha256": "436a312bc9825ac30494409b1b87ca3c9fa1724ea0033dee26d5c891959cad29"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-empty-command.txt",
+      "sha256": "7497f669650f52627b78dae4517ea2383bf577b570d956473ecb1ed50a844123"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-empty-stdout.txt",
+      "sha256": "6b7c3ca675b25e8b0ab849340fea14b2bb25da4c4d05b9b0724153da977dbcc6"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-evidence-path-missing.txt",
+      "sha256": "00ec97c07ba7c54b5fffddd462ace4a8065aeb4777262db6e1678199ec80feab"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-evidence-path-tampered.txt",
+      "sha256": "c1dbd2d789118ac02a40207afd9ae6ee14c4c1ce29eb6be6e6971ff3d29e26f2"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-artifacts-path-missing.txt",
+      "sha256": "2abc65dc413af5c10f4a7f24a75e9027c86270f8d171be4b26a73cd1831fe0f5"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-artifact-artifacts-path-escape.txt",
+      "sha256": "c54bdc9c582edd3d45d8fbb9a385d55a0e77f3a687a88e0cfa4da48cb5a28c2a"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/artifact-check-disabled.txt",
+      "sha256": "6e8b116044dd5ce54a6b36466951bff6128e94e129e9f9dd487c1babd0ace50e"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-missing.txt",
+      "sha256": "6ce66cf52cfe56fb1d6cbdce4f42087984a0dca6dce972f2eecbee1ddeb86281"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-incomplete.txt",
+      "sha256": "af31d97419029f1afdf59b6f11bf913676a6712f37ec923fa0ef27a2e75c1797"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-assurance-unbacked.txt",
+      "sha256": "06527855d772c60aefeb94a39a34757c966f01987b7e9fdc8ffe142f68b221f4"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/reject-dimensions-invalid.txt",
+      "sha256": "a92556c0abbea81cde34a03f0bbb60a6ff5e2f369f249800bcdf352e53783877"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-evidence-schema/valid-assurance.txt",
+      "sha256": "ba8885b0b4080fc7f81c9bbe12b4704e95d4fbd8889b222f981a221c455b651f"
+    }
+  ]
+}

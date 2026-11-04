@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-command-empty.json
+  - scenario 'ran-check'.evidence[0]: kind 'command' requires a non-empty note; an empty command reference is not evidence

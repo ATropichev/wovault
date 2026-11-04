@@ -1,0 +1,44 @@
+{
+  "spec_version": 1,
+  "updated": "2026-11-04",
+  "task": "CR-001",
+  "purpose": "Task-owned resource allowlist. reset and cleanup operations MUST refuse any resource not matched by this file. Matching is by exact repo-relative path prefix or container-name prefix; nothing outside these rules may be deleted, reset or modified.",
+
+  "filesystem": {
+    "owned_path_prefixes": [
+      "lab-output/"
+    ],
+    "rules": [
+      "Paths are resolved relative to the repository root and normalized; '..' escapes are rejected before any comparison.",
+      "Only paths that resolve inside an owned_path_prefixes entry are task-owned.",
+      "Tracked repository files are never task-owned, even under an owned prefix.",
+      "Directories are removed recursively only after the owned check passes for the resolved real path."
+    ]
+  },
+
+  "containers": {
+    "owned_name_prefixes": [
+      "wov-g000-"
+    ],
+    "allowed_actions": ["create", "start", "stop", "rm", "logs", "inspect"],
+    "rules": [
+      "Any container whose name does not start with an owned prefix is refused, including stop/rm.",
+      "Container operations are coordinator-executed; the local environment has no Docker socket."
+    ]
+  },
+
+  "network": {
+    "owned_namespaces": "network namespaces created for a single check run; destroyed when the run exits",
+    "rules": [
+      "Lab runs never create or modify host network configuration.",
+      "Isolation checks may only deny connectivity; they must not open host listeners reachable from outside."
+    ]
+  },
+
+  "processes": {
+    "rules": [
+      "Check payloads run only inside an isolated namespace and are killed with it.",
+      "No lab step may signal or inspect processes it did not start."
+    ]
+  }
+}

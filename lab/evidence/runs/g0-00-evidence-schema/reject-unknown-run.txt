@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-unknown-with-actual.json
+  - scenario 'egress-denied': verdict 'unknown' must not carry an actual run record; non-tested outcomes are not executions

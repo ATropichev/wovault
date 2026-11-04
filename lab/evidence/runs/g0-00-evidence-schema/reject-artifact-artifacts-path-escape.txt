@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-artifacts-path-escape.json
+  - artifacts[0]: path '../outside.txt' escapes the repository

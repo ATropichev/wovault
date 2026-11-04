@@ -1,0 +1,4 @@
+G0 evidence example artifact — synthetic content only.
+This file exists so example reports can reference a real, digest-pinned
+artifact during artifact existence/hash verification. It must not change;
+its sha256 is recorded in valid-report.json.

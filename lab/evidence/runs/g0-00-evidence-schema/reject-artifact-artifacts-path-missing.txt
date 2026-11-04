@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-artifacts-path-missing.json
+  - artifacts[0]: artifact 'lab/evidence/runs/no-such-artifact.txt' does not exist

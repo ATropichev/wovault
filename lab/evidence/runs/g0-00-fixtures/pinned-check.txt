@@ -1,0 +1,3 @@
+MATCH site-alpha digest=ad50e24aecebd9453e9834298f096c4bf197dc50fa97df180f23bea1c6a295aa
+MATCH neighbor-beta digest=ba0a628387e8f5e5e107e06e7d6cf29a790ed26735aa60b403d04dda864f46e5
+MATCH neighbor-gamma digest=260fe088ed85fa71831bc8d756dccaa82d07c50cf113b40cdaff4325abd160fb

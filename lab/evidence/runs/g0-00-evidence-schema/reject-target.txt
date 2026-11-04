@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-unauthorized-target.json
+  - target: name 'production-web-01' is not an authorized target in the allowlist

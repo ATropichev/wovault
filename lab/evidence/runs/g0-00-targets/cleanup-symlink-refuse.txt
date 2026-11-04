@@ -1,0 +1,9 @@
+{
+  "performed": true,
+  "verified": false,
+  "resources_removed": [],
+  "refused": [
+    "lab-output/runs/20261104T123611Z/targets/symlink-check/escape"
+  ],
+  "leftovers": []
+}

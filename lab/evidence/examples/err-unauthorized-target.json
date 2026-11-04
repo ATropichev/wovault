@@ -1,0 +1,41 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "example-bad-target",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:00:00Z",
+  "executor": {
+    "actor": "example-actor",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64"
+    }
+  },
+  "target": {
+    "name": "production-web-01",
+    "kind": "remote-vps",
+    "authorized": true
+  },
+  "requirement_ids": [
+    "VER-03"
+  ],
+  "ac_ids": [
+    "AC-26"
+  ],
+  "scenarios": [
+    {
+      "id": "s-1",
+      "expected": "runs only on allowlisted targets",
+      "verdict": "planned"
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  }
+}

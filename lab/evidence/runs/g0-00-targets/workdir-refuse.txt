@@ -1,0 +1,1 @@
+REFUSED /tmp/wov-g0-evil-workdir resolves outside task-owned prefixes ['lab-output']

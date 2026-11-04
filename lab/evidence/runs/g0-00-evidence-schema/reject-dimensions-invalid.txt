@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-dimensions-invalid.json
+  - scenario 'ran-check': dimensions[0] 'not-a-dimension' is not an assurance key
