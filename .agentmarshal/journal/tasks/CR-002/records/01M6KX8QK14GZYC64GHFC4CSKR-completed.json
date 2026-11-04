@@ -1,0 +1,18 @@
+{
+  "advisory_dispositions": {
+    "A1": {
+      "disposition": "deferred",
+      "follow_up": "CR-003",
+      "reason": "CR-003 owns the obsolete bootstrap paragraph correction; current CI coverage and canonical CR-001 completion evidence are already recorded"
+    }
+  },
+  "completed_commit": "ef2d93c67df16a7f9a0d131e5d1d7ef49d76207c",
+  "created_at": "2026-11-04T18:31:15.297388Z",
+  "record_type": "completed",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "schema": 7,
+  "source": "live",
+  "task": "CR-002",
+  "tool_version": "0.6.0"
+}

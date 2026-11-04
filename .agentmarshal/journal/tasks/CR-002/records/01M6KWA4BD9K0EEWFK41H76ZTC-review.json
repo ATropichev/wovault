@@ -1,0 +1,139 @@
+{
+  "advisory_findings": [
+    "A1"
+  ],
+  "artifacts": [
+    {
+      "hash": "319dc53caf4d0fc22067ed069e0e13ef17c48cc85a4520549ea6c3ba983cc46c",
+      "ref": ".agentmarshal/journal/tasks/CR-002/artifacts/01M6KWA4BD9K0EEWFK41H76ZTC-review.md"
+    }
+  ],
+  "classes": {
+    "A1": "claim-accuracy"
+  },
+  "created_at": "2026-11-04T18:14:32.557602Z",
+  "evidence": {
+    "A1": "docs/development.md:91–93 contradicts docs/development.md:116 and openspec/changes/validate-g0-feasibility/tasks.md:3–15."
+  },
+  "findings": [],
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "ef2d93c67df16a7f9a0d131e5d1d7ef49d76207c",
+  "reviewed_contract": "a07e8522a5f9466b0ff19514082c38ba103bee79cb42aa6f68f1362b201ad2ce",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-002",
+  "tool_version": "0.6.0",
+  "verdict": "approved",
+  "verification": {
+    "executed": [
+      {
+        "result": "Stopped at missing pinned AgentMarshal installation; full check not completed.",
+        "what": "scripts/check with repository PATH and AGENTMARSHAL_ACTOR=agent-codex"
+      },
+      {
+        "result": "Two tests passed; six encountered sandbox temporary-directory errors before their assertions. These are environment limitations, not verified candidate defects.",
+        "what": "python3 -B -m unittest discover -s lab/tests -v"
+      },
+      {
+        "result": "All 25 examples behaved as expected.",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "All three pinned fixture digests matched.",
+        "what": "python3 -B lab/fixtures/generate.py --check"
+      },
+      {
+        "result": "All valid, including artifact existence/digests; totals 33 tested-pass and one blocked.",
+        "what": "Read-only Python validation of four retained reports against the canonical validator and published JSON Schema"
+      },
+      {
+        "result": "No schema-invalid mutation was accepted by the canonical validator.",
+        "what": "Read-only Python differential validation of 865 field-type and missing-field mutations"
+      },
+      {
+        "result": "Each of seven injected failures propagated exit 37 and stopped subsequent commands; successful control returned zero.",
+        "what": "Bash control-flow test with mocked commands for scripts/check"
+      },
+      {
+        "result": "Exactly one skipped comparison; no passed comparison.",
+        "what": "Optional jsonschema absence simulated through an import mock"
+      },
+      {
+        "result": "No errors; only local-sandbox executable.",
+        "what": "python3 -B lab/tools/labctl.py verify-allowlist --json"
+      },
+      {
+        "result": "98 files scanned; zero hits, zero errors.",
+        "what": "python3 -B lab/tools/labctl.py scan --paths lab/evidence docs"
+      },
+      {
+        "result": "Passed.",
+        "what": "python3 -m json.tool examples/recovery-manifest.json"
+      },
+      {
+        "result": "Passed.",
+        "what": "bash -n scripts/check"
+      },
+      {
+        "result": "Only synthetic /tmp test destinations matched.",
+        "what": "rg scan of lab/evidence for workstation paths and selected secret signatures"
+      },
+      {
+        "result": "Snapshot is not a Git repository; SHA and history could not be independently resolved.",
+        "what": "Git metadata inspection"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Would modify the read-only snapshot and install dependencies."
+      },
+      {
+        "what": "Full namespace experiment suite",
+        "why": "Mutates workspaces and retained evidence; outside this read-only review."
+      },
+      {
+        "what": "Standalone AgentMarshal/OpenSpec validation and git diff --check",
+        "why": "Pinned tools and Git metadata unavailable."
+      },
+      {
+        "what": "SHA-bound CI and AgentMarshal gate verification",
+        "why": "No actual candidate-bound CI result or populated journal supplied."
+      }
+    ],
+    "read": [
+      "Supplied CR-002 contract and four-file diff",
+      "AGENTS.md",
+      "README.md",
+      "docs/PRD.md",
+      "docs/research/landscape.md",
+      "docs/roadmap.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "docs/github-governance.md",
+      "docs/threat-model.md",
+      "docs/research/g0-00-lab-and-evidence-protocol.md",
+      "docs/decisions/0001-scope-and-engines.md",
+      "openspec/changes/validate-g0-feasibility proposal, design, tasks and feasibility-evidence delta specification",
+      "openspec/specs/ (only .gitkeep)",
+      ".agentmarshal/extensions/openspec.toml",
+      ".agentmarshal/journal/ (empty in snapshot)",
+      ".github/workflows/",
+      "scripts/check and tooling wrappers/setup script",
+      "lab/README.md, resources.json and targets.json",
+      "lab/tests/test_publication.py",
+      "lab/tools/labctl.py and run_checks.py",
+      "lab/fixtures/generate.py",
+      "lab/evidence/validate.py, report.schema.json and retained run reports"
+    ]
+  }
+}
