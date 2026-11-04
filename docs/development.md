@@ -1,6 +1,6 @@
 # Development environment and change governance
 
-Date: 2026-11-04. These are development tools, not an installed WOVault application.
+Date: 2026-11-05. These are development tools, not an installed WOVault application.
 
 ## Installation
 
@@ -88,10 +88,13 @@ a specific SHA; CI attestation and `agentmarshal gate` then check that same SHA.
 Do not set `AGENTMARSHAL_PIPELINE_OK_SHA` before checks actually run. Do not present
 self-review as independent or record operator acceptance on the user's behalf.
 
-The initial task `CR-001` is open for G0-00 (only group 1 of the active change).
-It is not completed; fixtures/lab and actual evidence remain to be produced.
-Commit the initial setup and contract before the first implementation commit.
-Open separate contracts for the remaining G0 groups when their work starts.
+Each G0 group runs under its own contract; `.agentmarshal/journal/tasks/`
+holds the canonical state. `CR-001` (the G0-00 lab protocol) is recorded
+completed at `c0151409` and `CR-002` (lab regression enforcement) at
+`ef2d93c`; `CR-003` covers documentary preparation for the G0-01 product
+trials. Commit the initial setup and contract before the first
+implementation commit. Open separate contracts for the remaining G0 groups
+when their work starts.
 
 Local validation and GitHub checks are described in [GitHub governance](github-governance.md).
 Protection requires specification validation, the CI scope/journal gate and a
