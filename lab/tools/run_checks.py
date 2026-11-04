@@ -1166,7 +1166,7 @@ def main(argv=None):
     parser.add_argument("group", choices=list(GROUPS) + ["all"])
     parser.add_argument("--workdir", type=Path,
                         default=LAB_OUT / "runs" / datetime.now(timezone.utc)
-                        .strftime("%Y%m%dT%H%M%SZ"))
+                        .strftime("%Y%m%dT%H%M%S%fZ"))
     parser.add_argument("--publish", type=Path, default=PUBLISH_DIR)
     parser.add_argument("--no-cleanup", action="store_true",
                         help="retain each group's workdir (recorded in the "
@@ -1179,15 +1179,23 @@ def main(argv=None):
     except labctl.Refused as exc:
         print(f"REFUSED {exc}", file=sys.stderr)
         return 3
-    workdir.mkdir(parents=True, exist_ok=True)
     publish.mkdir(parents=True, exist_ok=True)
+    try:
+        # A reused workspace could contain redirected group or payload paths.
+        # Refuse it intact instead of trusting or deleting its descendants.
+        workdir.mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        print("REFUSED --workdir must name a new workspace; existing data "
+              "is preserved", file=sys.stderr)
+        return 3
 
     names = list(GROUPS) if args.group == "all" else [args.group]
     results, failures = {}, []
     for name in names:
         gdir = workdir / name
-        gdir.mkdir(parents=True, exist_ok=True)
         try:
+            gdir = labctl.resolve_owned(gdir)
+            gdir.mkdir(parents=True, exist_ok=False)
             report, art = GROUPS[name](gdir, publish)
         except Exception as exc:  # never leave a group without a report
             traceback.print_exc()

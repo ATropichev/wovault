@@ -165,8 +165,16 @@
               },
               {
                 "if": {"properties": {"kind": {"const": "command"}}},
-                "then": {"required": ["note"], "properties": {"note": {"minLength": 1}}},
+                "then": {"required": ["note"], "properties": {"note": {"minLength": 1, "pattern": "\\S"}}},
                 "comment": "An empty command reference is not evidence."
+              },
+              {
+                "if": {"properties": {"kind": {"const": "stdout"}}},
+                "then": {"anyOf": [
+                  {"required": ["note"], "properties": {"note": {"minLength": 1, "pattern": "\\S"}}},
+                  {"required": ["path", "sha256"]}
+                ]},
+                "comment": "Stdout needs content or a digested artifact reference."
               },
               {
                 "if": {"required": ["path"]},

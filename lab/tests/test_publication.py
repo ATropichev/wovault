@@ -2,6 +2,8 @@
 import copy
 import importlib.util
 import json
+import io
+import contextlib
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -56,6 +58,23 @@ class PublicationTests(unittest.TestCase):
         saved = artifacts.save("nested/log.txt", "synthetic log")
         self.assertEqual((self.root / saved["path"]).read_text(), "synthetic log")
 
+    def test_reused_workspace_with_redirected_group_is_preserved_and_refused(self):
+        workspace = self.root / "lab-output/reused"
+        workspace.mkdir(parents=True)
+        (workspace / "targets").symlink_to(self.outside, target_is_directory=True)
+        resources = self.root / "lab/resources.json"
+        resources.write_text(json.dumps({"filesystem": {
+            "owned_path_prefixes": ["lab-output/"]}}))
+        with patch.object(runner.labctl, "REPO_ROOT", self.root), \
+                patch.object(runner.labctl, "RESOURCES_PATH", resources), \
+                patch.dict(runner.GROUPS, {"targets": unittest.mock.Mock()}), \
+                contextlib.redirect_stderr(io.StringIO()):
+            result = runner.main(["targets", "--workdir", str(workspace)])
+            runner.GROUPS["targets"].assert_not_called()
+        self.assertEqual(result, 3)
+        self.assertTrue((workspace / "targets").is_symlink())
+        self.assertEqual(self.sentinel.read_text(), "synthetic unrelated data")
+
     def test_error_report_json_scrubs_nested_paths_before_serialization(self):
         report = {"report_id": "synthetic-error", "scenarios": [{
             "blocker": f'OSError: {self.root}/a"quoted/path',
@@ -78,6 +97,22 @@ class PublicationTests(unittest.TestCase):
 
 
 class MalformedReportTests(unittest.TestCase):
+    def test_schema_and_validator_reject_empty_inline_evidence(self):
+        try:
+            from jsonschema import Draft202012Validator
+        except ImportError:
+            self.skipTest("optional jsonschema cross-check is unavailable")
+        schema = json.loads((LAB / "evidence/report.schema.json").read_text())
+        original = json.loads((LAB / "evidence/examples/valid-report.json").read_text())
+        targets = json.loads((LAB / "targets.json").read_text())
+        for evidence in ({"kind": "stdout"}, {"kind": "stdout", "note": "  "},
+                         {"kind": "command", "note": "  "}):
+            report = copy.deepcopy(original)
+            report["scenarios"][0]["evidence"] = [evidence]
+            with self.subTest(evidence=evidence):
+                self.assertTrue(list(Draft202012Validator(schema).iter_errors(report)))
+                self.assertTrue(runner.evidence_validate.validate(report, targets).errors)
+
     def test_field_type_mutations_return_errors_without_exceptions(self):
         validator = runner.evidence_validate
         original = json.loads((LAB / "evidence/examples/valid-report.json").read_text())

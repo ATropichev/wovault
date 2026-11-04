@@ -37,6 +37,9 @@ resolved and must stay inside a task-owned prefix, including through
 symlinked ancestors; `--publish` is scoped separately and must stay inside
 `lab/evidence/runs/`.
 
+Each invocation creates a new scratch workspace. An existing `--workdir` is
+refused intact, including any stale symlinks; use a new path for another run.
+
 ## Requirements
 
 Python ≥3.12, standard library only. The isolation check uses `bwrap`

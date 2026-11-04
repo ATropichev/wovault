@@ -123,7 +123,6 @@ def check_evidence(items, where, rep):
         if not isinstance(kind, str) or kind not in EVIDENCE_KINDS:
             rep.err(w, f"kind must be one of {sorted(EVIDENCE_KINDS)}")
             continue
-            kind = None
         if "path" in e and not (isinstance(e["path"], str) and e["path"]):
             rep.err(w, "path must be a non-empty string")
         if "sha256" in e and not (isinstance(e["sha256"], str)
