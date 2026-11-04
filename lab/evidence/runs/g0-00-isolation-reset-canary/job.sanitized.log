@@ -1,0 +1,6 @@
+2026-11-04T12:00:00Z job start
+connect db host=localhost password=REDACTED:db-password
+mysqldump -u wp -pREDACTED:db-password wp_alpha
+PUT https://storage.example.test/auth token=REDACTED:external-writer-token
+smtp login smtp.example.test pass=REDACTED:smtp-credential
+2026-11-04T12:00:03Z job done

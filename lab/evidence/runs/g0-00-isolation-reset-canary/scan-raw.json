@@ -1,0 +1,27 @@
+{
+  "scanned_files": 1,
+  "hits": [
+    {
+      "path": "lab-output/runs/20261104T123611Z/isolation/canary/job.raw.log",
+      "line": 2,
+      "canary_id": "db-password"
+    },
+    {
+      "path": "lab-output/runs/20261104T123611Z/isolation/canary/job.raw.log",
+      "line": 3,
+      "canary_id": "db-password"
+    },
+    {
+      "path": "lab-output/runs/20261104T123611Z/isolation/canary/job.raw.log",
+      "line": 4,
+      "canary_id": "external-writer-token"
+    },
+    {
+      "path": "lab-output/runs/20261104T123611Z/isolation/canary/job.raw.log",
+      "line": 5,
+      "canary_id": "smtp-credential"
+    }
+  ],
+  "errors": [],
+  "coverage": "complete"
+}

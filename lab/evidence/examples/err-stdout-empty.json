@@ -1,0 +1,52 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "example-stdout-empty",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:00:00Z",
+  "executor": {
+    "actor": "example-actor",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64"
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true
+  },
+  "requirement_ids": [
+    "NFR-02"
+  ],
+  "ac_ids": [
+    "AC-33"
+  ],
+  "scenarios": [
+    {
+      "id": "ran-check",
+      "expected": "shape check only",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "ran",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:00:01Z",
+        "duration_ms": 1
+      },
+      "evidence": [
+        {
+          "kind": "stdout"
+        }
+      ]
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  }
+}

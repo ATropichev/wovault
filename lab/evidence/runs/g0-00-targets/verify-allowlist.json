@@ -1,0 +1,10 @@
+{
+  "targets": [
+    "local-sandbox"
+  ],
+  "pending": [
+    "wov-g000-containers",
+    "wov-g000-vps-pair"
+  ],
+  "errors": []
+}

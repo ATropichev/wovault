@@ -1,0 +1,357 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "g0-00-isolation-reset-canary",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:36:14Z",
+  "executor": {
+    "actor": "agent-devin",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "python": "3.13.5",
+      "tools": {
+        "bwrap": "bubblewrap 0.12.0",
+        "unshare": "unshare from util-linux 2.41.5",
+        "docker": "Docker version 29.9.2, build a82e528"
+      }
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true,
+    "roles": [
+      "control",
+      "fixture-workspace",
+      "isolation-check",
+      "reset-check",
+      "canary-check"
+    ]
+  },
+  "requirement_ids": [
+    "VER-03",
+    "NFR-02",
+    "RST-08"
+  ],
+  "ac_ids": [
+    "AC-26",
+    "AC-33"
+  ],
+  "scenarios": [
+    {
+      "id": "net-egress-denied",
+      "expected": "payload attempts TCP egress to every lab role and external SMTP/webhook stand-ins plus DNS resolution; all must fail inside the isolated namespace",
+      "fault_point": "restored site tries to phone home (AC-26)",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "netns net:[4026532686] differs from host net:[4026531840]: True; egress successes=[]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 94.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/payload-result.json",
+          "sha256": "7db175f660f3671f4cca28f7a52b20dbe245b4c1268abe669bc5b8f6e19385ee",
+          "note": "payload output inside the namespace"
+        }
+      ]
+    },
+    {
+      "id": "fs-write-confined",
+      "expected": "payload may write only inside its bound docroot; writes to /, /etc, /usr, /tmp, /proc and via .. traversal must fail against the read-only root skeleton",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "unexpected write outcomes=[]; attempts=[('/site/payload-write.txt', True), ('/escape-marker.txt', False), ('/etc/payload-marker', False), ('/usr/payload-marker', False), ('/site/../escape2.txt', False), ('/tmp/payload-marker', False), ('/proc/payload-marker', False)]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 94.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/payload-result.json",
+          "sha256": "7db175f660f3671f4cca28f7a52b20dbe245b4c1268abe669bc5b8f6e19385ee",
+          "note": "payload output inside the namespace"
+        }
+      ]
+    },
+    {
+      "id": "namespace-confidentiality",
+      "expected": "the confined payload cannot see host files, harness environment variables or host processes: the planted sentinel and host files are unreadable, the marker environment variable is absent, the PID namespace shows only the sandbox's own processes and the sentinel on the host is untouched afterwards",
+      "fault_point": "restored runtime reads host secrets, environment or process table",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "host reads succeeded=[]; marker_env_seen=False; unexpected env=[]; pids=[1, 2]; sentinel intact=True; strays=[]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 94.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/payload-result.json",
+          "sha256": "7db175f660f3671f4cca28f7a52b20dbe245b4c1268abe669bc5b8f6e19385ee",
+          "note": "payload output inside the namespace"
+        }
+      ]
+    },
+    {
+      "id": "baseline-reset-restores",
+      "expected": "after mutation (modified, deleted and stray files), labctl reset returns the working copy to the baseline",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "reset exit=0; matches_baseline=True; removed=['htdocs/wp-config.php', 'stray-dir/stray.txt']",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 91.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset.json",
+          "sha256": "9b471dd9b731a4864d1b819c74a31c2898fb988ce7bc652bae0b68f2560984a4"
+        }
+      ]
+    },
+    {
+      "id": "reset-refuses-unowned",
+      "expected": "labctl reset refuses a scope outside task-owned prefixes",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "reset exit=3 (3=refused): REFUSED docs resolves outside task-owned prefixes ['lab-output']",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 91.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-refuse.txt",
+          "sha256": "b791c27324412c7db38705ca7eedb4ec6dc603792cab8159b3f0ce6399da8a0c"
+        }
+      ]
+    },
+    {
+      "id": "reset-refuses-overlap",
+      "expected": "reset refuses scope/baseline pairs where one contains the other, so it cannot destroy the baseline it restores from",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "base-in-scope: exit=3 (3=refused); scope-in-base: exit=3 (3=refused)",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 57.0
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-overlap-refuse.txt",
+          "sha256": "86e08ad1bc4032370afedf577b19d1f3e9d414f1e906dba0c353aea861639387"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-overlap-refuse-rev.txt",
+          "sha256": "86e08ad1bc4032370afedf577b19d1f3e9d414f1e906dba0c353aea861639387"
+        }
+      ]
+    },
+    {
+      "id": "canary-leak-detected",
+      "expected": "the canary scanner flags every pinned canary in a raw artifact (detector proves it can see leaks)",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "scan exit=1; detected ids=['db-password', 'external-writer-token', 'smtp-credential']",
+        "exit_code": 1,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 50.1
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-raw.json",
+          "sha256": "21c02ad18213702195eb2dfe9beb8768cc65b7ccdc3e00226bed562774969c45"
+        }
+      ]
+    },
+    {
+      "id": "canary-redaction",
+      "expected": "the sanitized copy of the same artifact contains no canary value (AC-33: canaries absent from publishable artifacts)",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "redact exit=0; sanitized scan exit=0 (0=clean)",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:14Z",
+        "duration_ms": 62.0
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-sanitized.json",
+          "sha256": "95c60c79645e5d07fe0d678a2467f70c8fdba77f66bdf1327e23c97824bee23e"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/job.sanitized.log",
+          "sha256": "9405bd463ab818c25e2982ba04541855df96df5fc6dbfc72631ef0066dc51286",
+          "note": "sanitized artifact"
+        }
+      ]
+    },
+    {
+      "id": "scan-incomplete-coverage",
+      "expected": "the scanner never reports clean on incomplete coverage: a missing path, an unreadable file and a binary file carrying canary bytes are each handled explicitly",
+      "fault_point": "missing or undecodable input silently passes as a clean scan",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "missing-path: exit=2; unreadable: exit=2; binary-canary: exit=1; clean-dir: exit=0; binary canary hit=True",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:15Z",
+        "duration_ms": 67.8
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-missing-path.json",
+          "sha256": "41bf60e36bc682685265bd162ca1bcad2177509bdcaeaa43b7e3f0ba9f1a8e52"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-unreadable.json",
+          "sha256": "1d50e80e1de0659343846a404f70a099b950f76a6895acd4a48efd5f614519dd"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-binary-canary.json",
+          "sha256": "a5609ecf6b5193333e181ecb67f2675e8498179e3b4b952ad44d1bb7fd331194"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-clean-dir.json",
+          "sha256": "95c60c79645e5d07fe0d678a2467f70c8fdba77f66bdf1327e23c97824bee23e"
+        }
+      ]
+    },
+    {
+      "id": "reports-carry-no-canary",
+      "expected": "committed evidence and run artifacts reference canaries by id only; no canary value appears under lab/evidence/ (the report file itself is written after this scan and contains ids only; it is covered by the post-run rescan)",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "scan exit=0; hits=[]; errors=[]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:15Z",
+        "duration_ms": 57.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-reports.json",
+          "sha256": "d296b8844d3dfbebb721a59ddb433cab6d2f88243a8ee66d7f32dbddd814e67f"
+        }
+      ]
+    },
+    {
+      "id": "no-workstation-paths-in-evidence",
+      "expected": "no retained artifact under lab/evidence/ contains the absolute repository or home path \u2014 evidence is repository-relative and sanitized before publication",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "files containing workstation-absolute prefixes: []",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:15Z",
+        "duration_ms": 1.2
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-isolation-reset-canary/workstation-path-scan.txt",
+          "sha256": "09fd206c8e59597ae9c9b9518eb7178dfa1976f8352c3eb7b7d9eb7df4e384bf"
+        }
+      ]
+    },
+    {
+      "id": "container-isolation-profile",
+      "expected": "the same isolation checks execute inside wov-g000-* containers on the coordinator profile",
+      "verdict": "blocked",
+      "blocker": "no Docker socket in this environment; container profile is coordinator-run and must produce its own run evidence"
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  },
+  "cleanup": {
+    "performed": true,
+    "verified": true,
+    "ran_at": "2026-11-04T12:36:15Z",
+    "resources_removed": [
+      "lab-output/runs/20261104T123611Z/isolation"
+    ],
+    "refused": [],
+    "leftovers": []
+  },
+  "artifacts": [
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/payload-result.json",
+      "sha256": "7db175f660f3671f4cca28f7a52b20dbe245b4c1268abe669bc5b8f6e19385ee"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset.json",
+      "sha256": "9b471dd9b731a4864d1b819c74a31c2898fb988ce7bc652bae0b68f2560984a4"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-refuse.txt",
+      "sha256": "b791c27324412c7db38705ca7eedb4ec6dc603792cab8159b3f0ce6399da8a0c"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-overlap-refuse.txt",
+      "sha256": "86e08ad1bc4032370afedf577b19d1f3e9d414f1e906dba0c353aea861639387"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/reset-overlap-refuse-rev.txt",
+      "sha256": "86e08ad1bc4032370afedf577b19d1f3e9d414f1e906dba0c353aea861639387"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-raw.json",
+      "sha256": "21c02ad18213702195eb2dfe9beb8768cc65b7ccdc3e00226bed562774969c45"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/job.sanitized.log",
+      "sha256": "9405bd463ab818c25e2982ba04541855df96df5fc6dbfc72631ef0066dc51286"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-sanitized.json",
+      "sha256": "95c60c79645e5d07fe0d678a2467f70c8fdba77f66bdf1327e23c97824bee23e"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-missing-path.json",
+      "sha256": "41bf60e36bc682685265bd162ca1bcad2177509bdcaeaa43b7e3f0ba9f1a8e52"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-unreadable.json",
+      "sha256": "1d50e80e1de0659343846a404f70a099b950f76a6895acd4a48efd5f614519dd"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-binary-canary.json",
+      "sha256": "a5609ecf6b5193333e181ecb67f2675e8498179e3b4b952ad44d1bb7fd331194"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-coverage-clean-dir.json",
+      "sha256": "95c60c79645e5d07fe0d678a2467f70c8fdba77f66bdf1327e23c97824bee23e"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/scan-reports.json",
+      "sha256": "d296b8844d3dfbebb721a59ddb433cab6d2f88243a8ee66d7f32dbddd814e67f"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-isolation-reset-canary/workstation-path-scan.txt",
+      "sha256": "09fd206c8e59597ae9c9b9518eb7178dfa1976f8352c3eb7b7d9eb7df4e384bf"
+    }
+  ]
+}

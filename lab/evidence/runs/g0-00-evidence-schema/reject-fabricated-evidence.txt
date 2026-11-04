@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-pass-without-evidence.json
+  - scenario 'egress-denied': verdict 'tested-pass' requires at least one evidence entry

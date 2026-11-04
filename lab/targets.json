@@ -1,0 +1,90 @@
+{
+  "spec_version": 1,
+  "updated": "2026-11-04",
+  "task": "CR-001",
+  "purpose": "Executable allowlist of disposable G0 lab targets. Any lab command that touches a target MUST resolve it here first; an entry absent from 'targets' or with authorized=false cannot be executed against. This file authorizes local synthetic targets only; it does not authorize production access, cloud APIs, paid trials or any Selectel resource.",
+
+  "authorization": {
+    "basis": "Owner instruction in CR-001: autonomous G0 work starting with a local-only synthetic lab.",
+    "production_access": "prohibited",
+    "cloud_api_calls": "prohibited",
+    "remote_execution": "requires a separate explicit assignment and a coordinator-run profile",
+    "remote_targets_require": [
+      "explicit written target authorization",
+      "resource budget",
+      "allowed address list",
+      "approved cleanup plan"
+    ]
+  },
+
+  "resource_budget": {
+    "max_concurrent_targets": 4,
+    "max_disk_mib_per_target": 2048,
+    "max_fixture_mib": 64,
+    "max_check_runtime_seconds": 300,
+    "cpu_limit_per_target": 2,
+    "memory_mib_limit_per_target": 2048,
+    "network": "no external egress; loopback or isolated namespace only"
+  },
+
+  "allowed_address_classes": [
+    "none",
+    "loopback (127.0.0.0/8, ::1)",
+    "container-internal names matching prefix wov-g000-",
+    "documentation ranges only for role identifiers: 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24, *.example.com, *.example.test, *.invalid"
+  ],
+
+  "topology_roles": [
+    {"role": "source", "description": "WordOps source server stand-in; holds synthetic sites", "doc_address": "192.0.2.10"},
+    {"role": "clean-target", "description": "Empty restore target", "doc_address": "192.0.2.20"},
+    {"role": "existing-target", "description": "Target holding the restore site plus two neighbor sites", "doc_address": "192.0.2.30"},
+    {"role": "control", "description": "WOVault control-plane stand-in; runs checks and staging", "doc_address": "198.51.100.10"},
+    {"role": "storage-s3", "description": "S3-compatible endpoint stand-in", "doc_address": "198.51.100.20"},
+    {"role": "storage-ftp", "description": "FTP/FTPS endpoint stand-in", "doc_address": "198.51.100.30"}
+  ],
+
+  "targets": [
+    {
+      "name": "local-sandbox",
+      "kind": "local-namespace",
+      "authorized": true,
+      "disposable": true,
+      "owner": "CR-001",
+      "address_class": "none",
+      "address": null,
+      "roles": ["control", "fixture-workspace", "isolation-check", "reset-check", "canary-check"],
+      "isolation_mechanism": "bubblewrap (bwrap) user/mount/network namespaces; unshare(1) fallback",
+      "workspace": "lab-output/",
+      "reset": "delete and recreate the task-owned workspace under lab-output/; never touches tracked files",
+      "cleanup": "lab/tools/labctl.py cleanup --apply removes only paths inside lab-output/ listed in lab/resources.json",
+      "limits": {"disk_mib": 2048, "runtime_seconds": 300},
+      "notes": "Runs on the implementer's machine as an unprivileged user. Provides real namespace isolation evidence, not a VPS or a WordOps environment."
+    }
+  ],
+
+  "pending_targets": [
+    {
+      "name": "wov-g000-containers",
+      "kind": "container-set",
+      "authorized": false,
+      "disposable": true,
+      "owner": "coordinator",
+      "address_class": "container-internal",
+      "name_prefix": "wov-g000-",
+      "roles": ["source", "clean-target", "existing-target", "storage-s3", "storage-ftp"],
+      "status": "defined-not-authorized",
+      "notes": "Container execution is owned by the coordinator; this environment has no Docker socket. Entry documents planned roles only. labctl refuses to execute against pending targets. Activation requires the coordinator to move the entry into 'targets' with authorized=true after confirming the cleanup plan."
+    },
+    {
+      "name": "wov-g000-vps-pair",
+      "kind": "remote-vps",
+      "authorized": false,
+      "disposable": true,
+      "owner": "coordinator",
+      "address_class": "none-yet",
+      "roles": ["source", "existing-target"],
+      "status": "defined-not-authorized",
+      "notes": "Real disposable VPS targets need a separate explicit assignment with named addresses, budget and cleanup approval. No cloud credentials or Selectel resources are authorized."
+    }
+  ]
+}

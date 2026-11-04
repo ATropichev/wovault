@@ -1,0 +1,72 @@
+{
+  "fixture_spec": 1,
+  "updated": "2026-11-04",
+  "seed": "wovault-g0-00-fixture-seed-2026-11-04",
+  "note": "All content is synthetic and generated deterministically from 'seed'. simulated_versions are labels embedded in fixture metadata so experiments can pin a target matrix; they are NOT validated upstream versions and imply no support claim.",
+
+  "simulated_versions": {
+    "wordpress": "6.8.1",
+    "woocommerce": "9.4.2",
+    "wordops": "3.22.1",
+    "php": "8.3.14",
+    "mariadb": "10.11.10",
+    "nginx": "1.26.2"
+  },
+
+  "canaries": [
+    {"id": "db-password", "value": "WOVAULT-CANARY-DB-7f3a9c1e2d4b"},
+    {"id": "external-writer-token", "value": "WOVAULT-CANARY-EXT-2b8d4f6a1c3e"},
+    {"id": "smtp-credential", "value": "WOVAULT-CANARY-SMTP-9e1c5b3d7a2f"}
+  ],
+
+  "fixtures": [
+    {
+      "name": "site-alpha",
+      "role": "restore-site",
+      "domain": "site-alpha.example.test",
+      "doc_address": "192.0.2.10",
+      "db_name": "wp_alpha",
+      "db_prefix": "wpal_",
+      "plugins": ["woocommerce", "akismet", "classic-editor"],
+      "mu_plugins": ["object-cache"],
+      "theme": "storefront",
+      "upload_files": 12,
+      "woo_orders": 40,
+      "writers": ["cron", "queue", "external-importer"],
+      "drift": ["registry-domain-mismatch", "vhost-alias-unregistered"],
+      "canary_ids": ["db-password", "external-writer-token", "smtp-credential"]
+    },
+    {
+      "name": "neighbor-beta",
+      "role": "neighbor-site",
+      "domain": "neighbor-beta.example.test",
+      "doc_address": "192.0.2.30",
+      "db_name": "wp_beta",
+      "db_prefix": "wpbt_",
+      "plugins": ["akismet"],
+      "mu_plugins": [],
+      "theme": "twentytwentyfive",
+      "upload_files": 4,
+      "woo_orders": 0,
+      "writers": ["cron"],
+      "drift": [],
+      "canary_ids": []
+    },
+    {
+      "name": "neighbor-gamma",
+      "role": "neighbor-site",
+      "domain": "neighbor-gamma.example.test",
+      "doc_address": "192.0.2.30",
+      "db_name": "wp_gamma",
+      "db_prefix": "wpgm_",
+      "plugins": ["classic-editor"],
+      "mu_plugins": [],
+      "theme": "twentytwentyfive",
+      "upload_files": 4,
+      "woo_orders": 0,
+      "writers": ["cron"],
+      "drift": [],
+      "canary_ids": []
+    }
+  ]
+}

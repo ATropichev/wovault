@@ -1,0 +1,13 @@
+{
+  "reset": "ok",
+  "scope": "lab-output/runs/20261104T123611Z/isolation/reset/working",
+  "restored_or_rewritten": [
+    "db/dump.sql",
+    "htdocs/wp-config.php"
+  ],
+  "removed_strays": [
+    "htdocs/wp-config.php",
+    "stray-dir/stray.txt"
+  ],
+  "matches_baseline": true
+}

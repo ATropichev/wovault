@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-stdout-empty.json
+  - scenario 'ran-check'.evidence[0]: kind 'stdout' requires a non-empty note or a digested artifact path; an empty reference is not evidence

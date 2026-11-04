@@ -1,0 +1,296 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "g0-00-targets",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:36:11Z",
+  "executor": {
+    "actor": "agent-devin",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "python": "3.13.5",
+      "tools": {
+        "bwrap": "bubblewrap 0.12.0",
+        "unshare": "unshare from util-linux 2.41.5",
+        "docker": "Docker version 29.9.2, build a82e528"
+      }
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true,
+    "roles": [
+      "control",
+      "fixture-workspace",
+      "isolation-check",
+      "reset-check",
+      "canary-check"
+    ]
+  },
+  "requirement_ids": [
+    "NFR-02"
+  ],
+  "ac_ids": [
+    "AC-33"
+  ],
+  "scenarios": [
+    {
+      "id": "allowlist-verify",
+      "expected": "every executable target is disposable, authorized and has no production address; pending targets stay non-executable",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "exit=0; executable=['local-sandbox']; pending=['wov-g000-containers', 'wov-g000-vps-pair']; errors=[]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 61.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/verify-allowlist.json",
+          "sha256": "67b86a3a2450c3abc233bdd231e06c49bc89bf45b9bbf6ecfc579c94b135299d"
+        }
+      ]
+    },
+    {
+      "id": "allowlist-rejects-production",
+      "expected": "a doctored allowlist adding an executable target with a non-allowlisted (non-loopback) address is rejected",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "doctored allowlist exit=2; verifier must list the forbidden address",
+        "exit_code": 2,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 54.8
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/verify-doctored.txt",
+          "sha256": "9e0c677a97c569eb5a9ca1e1a112c5fe7be32df759e0c8a49ea030e477226f51"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/doctored-targets.json",
+          "sha256": "83c575e29d0a66ee9fda6cb3d23ed4816424bdebc0fc1def130b6220e23ae679",
+          "note": "doctored input"
+        }
+      ]
+    },
+    {
+      "id": "pending-target-not-executable",
+      "expected": "labctl resolve refuses the coordinator-owned pending container target",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "resolve exit=3 (3=refused): REFUSED target 'wov-g000-containers' is not in the executable allowlist",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 87.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/resolve-pending.txt",
+          "sha256": "af7b732e9f8927b907faece8611f67c92d7ca45117c32262bad14cfbd6b29bf1"
+        }
+      ]
+    },
+    {
+      "id": "cleanup-refuses-unowned",
+      "expected": "cleanup --apply refuses a tracked, non-owned path and leaves it untouched",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "cleanup exit=3; file intact=True",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 60.8
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-refuse.txt",
+          "sha256": "67a56af558be8775d5cb0e15d3b1c603006fffbbecabfe76e21ab042bae0bd85"
+        }
+      ]
+    },
+    {
+      "id": "cleanup-refuses-symlink-escape",
+      "expected": "a symlink inside the owned prefix pointing outside the workspace is refused and its target left untouched",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "cleanup exit=3 (3=refused); docs/ intact=True: REFUSED lab-output/runs/20261104T123611Z/targets/symlink-check/escape resolves outside task-owned prefixes ['lab-output']",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 51.5
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-symlink-refuse.txt",
+          "sha256": "1dfb30f97bbec3a8a4ee1640119745ab229c8143f7567fe11978610a85698a94"
+        }
+      ]
+    },
+    {
+      "id": "containers-require-activation",
+      "expected": "cleanup --containers refuses while the container-set target is pending, and refuses a non-local Docker endpoint or context \u2014 without contacting any daemon",
+      "fault_point": "pending profile silently enumerates/removes prefix-matching containers on an arbitrary Docker context",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "plain-env: exit=3 REFUSED no activated container-set target in the executable allowlist; pending targets ['wov-g000-containers'] require coordinator activation first; remote-docker-host: exit=3 REFUSED no activated container-set target in the executable allowlist; pending targets ['wov-g000-containers'] require coordinator activation first; dead-local-socket: exit=3 REFUSED no activated container-set target in the executable allowlist; pending targets ['wov-g000-containers'] require coordinator activation first; named-context: exit=3 REFUSED no activated container-set target in the executable allowlist; pending targets ['wov-g000-containers'] require coordinator activation first",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 95.4
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-refuse.txt",
+          "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-remote-docker-host.txt",
+          "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-dead-local-socket.txt",
+          "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-named-context.txt",
+          "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+        }
+      ]
+    },
+    {
+      "id": "generate-out-refuses-unowned",
+      "expected": "fixture generation refuses --out destinations outside the task-owned prefix, including one that escapes through a symlinked ancestor, and creates nothing there",
+      "fault_point": "arbitrary --out deletes a pre-existing directory outside the lab workspace",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "tmp-out: exit=3; symlink-out: exit=3; /tmp/wov-g0-evil-out absent=True",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:11Z",
+        "duration_ms": 84.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/generate-out-refuse.txt",
+          "sha256": "02540eb0008cd2c1ef56e1643c956ace5ca382dcaf72a38a960ab1eacc310719"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/generate-out-symlink-refuse.txt",
+          "sha256": "6fd3d0171249031a084b7a485266ab250cf328fe5957204f40b02a9f14cf828b"
+        }
+      ]
+    },
+    {
+      "id": "workdir-refuses-unowned",
+      "expected": "run_checks refuses --workdir and --publish destinations outside the task-owned prefix and the evidence directory before creating anything",
+      "fault_point": "an arbitrary --workdir becomes a mutating scratch root outside the allowlist",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "workdir exit=3 (3=refused, created=False); publish exit=3 (created=False)",
+        "exit_code": 3,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 78.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/workdir-refuse.txt",
+          "sha256": "6c6173a90d747453063111b1a434810107412e16b4713202303f4d2965ecc262"
+        },
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-targets/publish-refuse.txt",
+          "sha256": "5ca671d5cb5cf5bbdcbe9f843b44e22a9846fcf7b16c612cf99c734c3a5ea709"
+        }
+      ]
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  },
+  "cleanup": {
+    "performed": true,
+    "verified": true,
+    "ran_at": "2026-11-04T12:36:12Z",
+    "resources_removed": [
+      "lab-output/runs/20261104T123611Z/targets"
+    ],
+    "refused": [],
+    "leftovers": []
+  },
+  "artifacts": [
+    {
+      "path": "lab/evidence/runs/g0-00-targets/verify-allowlist.json",
+      "sha256": "67b86a3a2450c3abc233bdd231e06c49bc89bf45b9bbf6ecfc579c94b135299d"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/doctored-targets.json",
+      "sha256": "83c575e29d0a66ee9fda6cb3d23ed4816424bdebc0fc1def130b6220e23ae679"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/verify-doctored.txt",
+      "sha256": "9e0c677a97c569eb5a9ca1e1a112c5fe7be32df759e0c8a49ea030e477226f51"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/resolve-pending.txt",
+      "sha256": "af7b732e9f8927b907faece8611f67c92d7ca45117c32262bad14cfbd6b29bf1"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-refuse.txt",
+      "sha256": "67a56af558be8775d5cb0e15d3b1c603006fffbbecabfe76e21ab042bae0bd85"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-symlink-refuse.txt",
+      "sha256": "1dfb30f97bbec3a8a4ee1640119745ab229c8143f7567fe11978610a85698a94"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-refuse.txt",
+      "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-remote-docker-host.txt",
+      "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-dead-local-socket.txt",
+      "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/cleanup-containers-named-context.txt",
+      "sha256": "a409656eee0d96f5598e71e7ccea905b538e36faa298b210be208850b88ebfc9"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/generate-out-refuse.txt",
+      "sha256": "02540eb0008cd2c1ef56e1643c956ace5ca382dcaf72a38a960ab1eacc310719"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/generate-out-symlink-refuse.txt",
+      "sha256": "6fd3d0171249031a084b7a485266ab250cf328fe5957204f40b02a9f14cf828b"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/workdir-refuse.txt",
+      "sha256": "6c6173a90d747453063111b1a434810107412e16b4713202303f4d2965ecc262"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-targets/publish-refuse.txt",
+      "sha256": "5ca671d5cb5cf5bbdcbe9f843b44e22a9846fcf7b16c612cf99c734c3a5ea709"
+    }
+  ]
+}

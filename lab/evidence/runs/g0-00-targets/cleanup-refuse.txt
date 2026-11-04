@@ -1,0 +1,9 @@
+{
+  "performed": true,
+  "verified": false,
+  "resources_removed": [],
+  "refused": [
+    "lab/topology.md"
+  ],
+  "leftovers": []
+}

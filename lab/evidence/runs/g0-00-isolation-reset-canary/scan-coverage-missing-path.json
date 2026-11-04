@@ -1,0 +1,8 @@
+{
+  "scanned_files": 0,
+  "hits": [],
+  "errors": [
+    "missing input path: <repo>/lab-output/runs/20261104T123611Z/isolation/canary/does-not-exist.log"
+  ],
+  "coverage": "incomplete"
+}

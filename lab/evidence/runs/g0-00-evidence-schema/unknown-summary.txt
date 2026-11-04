@@ -1,0 +1,3 @@
+VALID lab/evidence/examples/valid-unknown-report.json
+  verdicts: documented=1  planned=1  unknown=1
+  tested-pass scenarios: 0 of 3

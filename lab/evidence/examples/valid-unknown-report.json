@@ -1,0 +1,48 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "example-unknown-001",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:00:00Z",
+  "executor": {
+    "actor": "example-actor",
+    "profile": "local-namespace",
+    "environment": {"os": "linux", "arch": "x86_64"}
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true
+  },
+  "requirement_ids": ["BKP-05"],
+  "ac_ids": ["AC-10"],
+  "scenarios": [
+    {
+      "id": "writer-freeze",
+      "title": "Freeze all known writers",
+      "expected": "confirmed stopped window with measured pause",
+      "verdict": "unknown"
+    },
+    {
+      "id": "vendor-claim",
+      "title": "Vendor claim about freeze support",
+      "expected": "upstream documents the mechanism",
+      "verdict": "documented",
+      "source": "https://mariadb.com/docs/server/clients-and-utilities/backup-restore-and-import-clients/mariadb-dump"
+    },
+    {
+      "id": "remote-vps-freeze",
+      "title": "Freeze on a real disposable VPS",
+      "expected": "watchdog restores original writer states",
+      "verdict": "planned"
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  }
+}

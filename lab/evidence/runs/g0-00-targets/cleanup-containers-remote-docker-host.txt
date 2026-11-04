@@ -1,0 +1,1 @@
+REFUSED no activated container-set target in the executable allowlist; pending targets ['wov-g000-containers'] require coordinator activation first

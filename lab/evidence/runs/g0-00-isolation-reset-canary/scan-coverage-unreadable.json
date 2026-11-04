@@ -1,0 +1,8 @@
+{
+  "scanned_files": 0,
+  "hits": [],
+  "errors": [
+    "unreadable file: lab-output/runs/20261104T123611Z/isolation/canary/unreadable.log (Permission denied)"
+  ],
+  "coverage": "incomplete"
+}

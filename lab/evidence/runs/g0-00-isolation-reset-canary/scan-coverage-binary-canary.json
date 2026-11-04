@@ -1,0 +1,12 @@
+{
+  "scanned_files": 1,
+  "hits": [
+    {
+      "path": "lab-output/runs/20261104T123611Z/isolation/canary/blob.bin",
+      "line": 1,
+      "canary_id": "smtp-credential"
+    }
+  ],
+  "errors": [],
+  "coverage": "complete"
+}

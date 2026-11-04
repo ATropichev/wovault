@@ -1,0 +1,151 @@
+{
+  "schema_version": "g0-evidence/1",
+  "report_id": "g0-00-fixtures",
+  "task": "CR-001",
+  "change": "validate-g0-feasibility",
+  "generated_at": "2026-11-04T12:36:12Z",
+  "executor": {
+    "actor": "agent-devin",
+    "profile": "local-namespace",
+    "environment": {
+      "os": "linux",
+      "arch": "x86_64",
+      "kernel": "6.6.87.2-microsoft-standard-WSL2",
+      "python": "3.13.5",
+      "tools": {
+        "bwrap": "bubblewrap 0.12.0",
+        "unshare": "unshare from util-linux 2.41.5",
+        "docker": "Docker version 29.9.2, build a82e528"
+      }
+    }
+  },
+  "target": {
+    "name": "local-sandbox",
+    "kind": "local-namespace",
+    "authorized": true,
+    "roles": [
+      "control",
+      "fixture-workspace",
+      "isolation-check",
+      "reset-check",
+      "canary-check"
+    ]
+  },
+  "requirement_ids": [
+    "BKP-03",
+    "NFR-05"
+  ],
+  "ac_ids": [
+    "AC-33"
+  ],
+  "scenarios": [
+    {
+      "id": "generate-repeatable",
+      "expected": "two independent generation runs produce identical manifests and digests",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "two generations byte-identical: True; digests equal: True",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 95.9
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-fixtures/repeatability.txt",
+          "sha256": "3e96473f4d9927e052d04aff7a3a7c63720df80fac11fd65b6b0acf4628827b5"
+        }
+      ]
+    },
+    {
+      "id": "matches-pinned-manifest",
+      "expected": "regeneration matches the committed expected manifests in lab/fixtures/expected/",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "MATCH site-alpha digest=ad50e24aecebd9453e9834298f096c4bf197dc50fa97df180f23bea1c6a295aa; MATCH neighbor-beta digest=ba0a628387e8f5e5e107e06e7d6cf29a790ed26735aa60b403d04dda864f46e5; MATCH neighbor-gamma digest=260fe088ed85fa71831bc8d756dccaa82d07c50cf113b40cdaff4325abd160fb",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 64.0
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-fixtures/pinned-check.txt",
+          "sha256": "168c150b7c4c7356b2fc8f91b153807a16d903b4ce40d79991f91b8bbb34611f"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-content-only",
+      "expected": "fixture trees contain only documentation-range IPs, example/invalid domains and the pinned canary tokens",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "scanned 136 files; non-doc IPs=[]; non-example domains=[]",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 21.2
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-fixtures/synthetic-scan.txt",
+          "sha256": "bc9aa3a08ed3a3de4b9b2662e462b27ccdd738d874935f42bd55e28c405460ba"
+        }
+      ]
+    },
+    {
+      "id": "canary-placement",
+      "expected": "canary tokens appear exactly in the fixtures that pin them and nowhere else",
+      "verdict": "tested-pass",
+      "actual": {
+        "summary": "site-alpha carries 3 canaries; neighbors carry none",
+        "exit_code": 0,
+        "ran_at": "2026-11-04T12:36:12Z",
+        "duration_ms": 5.7
+      },
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "lab/evidence/runs/g0-00-fixtures/canary-placement.txt",
+          "sha256": "0065fbfb08b19b7add34e8574fe12028455697c659ee2975de890137bf8314d9"
+        }
+      ]
+    }
+  ],
+  "assurance": {
+    "transfer": "not_checked",
+    "completeness": "not_checked",
+    "consistency": "not_checked",
+    "integrity": "not_checked",
+    "restore_test": "not_checked",
+    "security": "not_checked"
+  },
+  "cleanup": {
+    "performed": true,
+    "verified": true,
+    "ran_at": "2026-11-04T12:36:12Z",
+    "resources_removed": [
+      "lab-output/runs/20261104T123611Z/fixtures"
+    ],
+    "refused": [],
+    "leftovers": []
+  },
+  "artifacts": [
+    {
+      "path": "lab/evidence/runs/g0-00-fixtures/repeatability.txt",
+      "sha256": "3e96473f4d9927e052d04aff7a3a7c63720df80fac11fd65b6b0acf4628827b5"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-fixtures/pinned-check.txt",
+      "sha256": "168c150b7c4c7356b2fc8f91b153807a16d903b4ce40d79991f91b8bbb34611f"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-fixtures/synthetic-scan.txt",
+      "sha256": "bc9aa3a08ed3a3de4b9b2662e462b27ccdd738d874935f42bd55e28c405460ba"
+    },
+    {
+      "path": "lab/evidence/runs/g0-00-fixtures/canary-placement.txt",
+      "sha256": "0065fbfb08b19b7add34e8574fe12028455697c659ee2975de890137bf8314d9"
+    }
+  ]
+}

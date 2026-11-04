@@ -1,0 +1,1 @@
+REFUSED docs resolves outside task-owned prefixes ['lab-output']

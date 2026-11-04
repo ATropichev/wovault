@@ -1,0 +1,208 @@
+{
+  "files": [
+    {
+      "mode": "0644",
+      "path": "db/dump.sql",
+      "sha256": "39c9f1baa8bcaeec211fc8e28e6dae3cb73cec10a37b1ea626f074fadf86ca04",
+      "size": 4408
+    },
+    {
+      "mode": "0644",
+      "path": "drift/registry-vs-vhost.json",
+      "sha256": "0eb34c06e8a13fe59a751fa8e73820fe715bc1a3b165b3ad2a93acf1952c146a",
+      "size": 347
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/index.php",
+      "sha256": "090d08a315da84c35134e3f282b392b4ea7e790d55ac9e13905012a0c324dabc",
+      "size": 98
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-admin/admin.php",
+      "sha256": "476288f396d6cbf5c67eaa11cc752b94f3f62fbcbe6a8ef8beed91ef9017075b",
+      "size": 40
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-config.php",
+      "sha256": "e5bcddbc67d8f16f1a7ed2f4a29db0d9d48824df81f9a7dbf804bb4e14b62bcc",
+      "size": 357
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/cache/object/probe.cache",
+      "sha256": "8dffb63486726dcaff94baa91d17e4260d84b5ae18022fe4f9f3dd7695efe9c2",
+      "size": 34
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/mu-plugins/object-cache.php",
+      "sha256": "0558aa063fb38cfe1291412378a0c263ad687b21637c266dac6a4a5e43739308",
+      "size": 60
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/akismet/akismet.php",
+      "sha256": "1bde328206f8a21f2267ab13d980a228e921335f57cdffef06a797996c3bedf2",
+      "size": 105
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/akismet/readme.txt",
+      "sha256": "a4475ec8dc7b3c13571f1f2687bfbb0ca87a801a1360ae3f10d904dad542981c",
+      "size": 70
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/classic-editor/classic-editor.php",
+      "sha256": "932a56650871de022a82e6aac7deb26e15fff00cea57a3edddaf456af88ac1a4",
+      "size": 112
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/classic-editor/readme.txt",
+      "sha256": "98854bc37c3dc64389dc0d2bca494a2f69f8f12a38bba8c5fd359b264b7e1721",
+      "size": 77
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/woocommerce/readme.txt",
+      "sha256": "0094eb0beff180b8b33301a0058e72f40b53f8c3f4324305dc91deed2661b868",
+      "size": 74
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/plugins/woocommerce/woocommerce.php",
+      "sha256": "b119c1181ced3957ff35b8894a7e13297837e700ab4d8e9ebd6526da6a780d26",
+      "size": 109
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/themes/storefront/style.css",
+      "sha256": "e359b890bcfe9d404942d244cefb9d6219d60ef2a050f6205e414fb8f7a7951d",
+      "size": 58
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/.htaccess",
+      "sha256": "4ce64285e2a5132b4d2ecd72c341a7f74d386102bdcea9b99f88fa8adff2085c",
+      "size": 47
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-00.txt",
+      "sha256": "5867f8b2baafd970b8db3d93899188e6734e264770c0bc9f76ee8d471be6887d",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-01.txt",
+      "sha256": "029c304e33dee27161a6d7fd0b5e2c414acaf4f7d2ccb995be826e582b818af1",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-02.txt",
+      "sha256": "1db6f5b7fa7cc1a7a2c69bbe744a66a62fa60ec124365bc7403ac1335a78b6de",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-03.txt",
+      "sha256": "f568edc6699b0a03f9985fc64b52070a7fc7c0dc697d0e359988b4311e5bf6d0",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-04.txt",
+      "sha256": "65bd47603bba911f1185c185e9cd34b1011978d0d1491203f2523608db6e362e",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-05.txt",
+      "sha256": "ab9acc71681fb7724676d658c3713caf413661ae6a8a32b487805b248274758c",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-06.txt",
+      "sha256": "e651f41b7288de51ab999ff2f44f7843568d4848fcf7c974f74aef2b77ae3c02",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-07.txt",
+      "sha256": "a619889fed1c4009dfab3096320221f6ce1ab63ab0625c27604b6e774a82e083",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-08.txt",
+      "sha256": "636ed1b153db7ebffb529c25091324ee2668d4aec329ff2eb44953619db3a84a",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-09.txt",
+      "sha256": "6d787a489a1e62eca39d0907f46498a3a59b6e31d010510722a21b8de40366e3",
+      "size": 223
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-10.txt",
+      "sha256": "cc11bca8a3bbd7d64e179a8b02e8643c856640624e2b93c3ddd9d957b5d043be",
+      "size": 224
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-content/uploads/2026/10/file-11.txt",
+      "sha256": "45c44d0310a87bd22f4b819261235550d2f249f358cdbd7f2ab856ed368a6a00",
+      "size": 224
+    },
+    {
+      "mode": "0644",
+      "path": "htdocs/wp-includes/version.php",
+      "sha256": "ab15689c05a97135488f03f94ffcb2230c5d691fc1f26635edf977f3db88d991",
+      "size": 57
+    },
+    {
+      "mode": "0644",
+      "path": "site.json",
+      "sha256": "7d036cc75982b6a1a070bf372b74f8de62e9080d0abff5e444575dc94bd48b10",
+      "size": 397
+    },
+    {
+      "mode": "0644",
+      "path": "writers/cron.log",
+      "sha256": "00d0a289da3119d04c0264fccee59f0354ba80eb892c907fd3cbd5a5c5d4ba7b",
+      "size": 426
+    },
+    {
+      "mode": "0644",
+      "path": "writers/external-importer.conf",
+      "sha256": "8e64b335b0fe517a420f73b18e5c45101a52acf1a91fd1301abe646bec166ded",
+      "size": 159
+    },
+    {
+      "mode": "0644",
+      "path": "writers/queue.state",
+      "sha256": "07aa27fbf8179d02e0bdb09a877c6414f58093fae47661e9ff722b6d6be85d88",
+      "size": 132
+    },
+    {
+      "mode": "0644",
+      "path": "writers/smtp.conf",
+      "sha256": "41c4844c8bce22fb489a8bedc529efa159972c550ac2a254eedee0074a3f1996",
+      "size": 109
+    }
+  ],
+  "fixture": "site-alpha",
+  "fixture_spec": 1,
+  "manifest_digest": "ad50e24aecebd9453e9834298f096c4bf197dc50fa97df180f23bea1c6a295aa",
+  "pins_sha256": "24d89b256d0f81f5c0dfc871daa731978f2c106c1926f692bf7e04d2d921eb34",
+  "seed": "wovault-g0-00-fixture-seed-2026-11-04",
+  "synthetic": true
+}

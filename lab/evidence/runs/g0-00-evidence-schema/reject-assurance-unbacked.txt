@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-assurance-unbacked.json
+  - assurance: 'integrity'=passed requires a tested-pass scenario declaring dimensions containing 'integrity'

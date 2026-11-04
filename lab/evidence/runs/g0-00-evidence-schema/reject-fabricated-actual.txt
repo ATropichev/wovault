@@ -1,0 +1,2 @@
+INVALID lab/evidence/examples/err-pass-without-actual.json
+  - scenario 'egress-denied': verdict 'tested-pass' requires an actual run record
