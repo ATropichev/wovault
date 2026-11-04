@@ -1,0 +1,126 @@
+{
+  "advisory_findings": [
+    "A1"
+  ],
+  "artifacts": [
+    {
+      "hash": "643811671baca6c60dd3e01060206287878fbfd94250d4fa13c17b1f306e1e14",
+      "ref": ".agentmarshal/journal/tasks/CR-001/artifacts/01M6KTA8MV76C18WBXAFMG8ZYZ-review.md"
+    }
+  ],
+  "classes": {
+    "A1": "contract-mismatch",
+    "F1": "security"
+  },
+  "created_at": "2026-11-04T17:39:39.803133Z",
+  "evidence": {
+    "A1": "lab/evidence/report.schema.json:150; differential check printed 'empty stdout: schema errors= 0 canonical errors= 1'.",
+    "F1": "lab/tools/run_checks.py:1188; unchecked gdir dispatched at line 1191; mutating check_targets uses workdir/symlink-check. Mocked probe printed 'group callback received: lab-output/review/targets resolved: docs'; resolve_owned returned Refused."
+  },
+  "findings": [
+    "F1"
+  ],
+  "previous_review": "01M6KSV6H3VJVMGXJZ0EVG1H8H",
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "e3481d7b85d369711169564e00d19e9bef788a19",
+  "reviewed_contract": "336df368f0cd14648aae8dad6ab964306cfb53a964723c15408d8c9096f67328",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-001",
+  "tool_version": "0.6.0",
+  "verdict": "changes_required",
+  "verification": {
+    "executed": [
+      {
+        "result": "25 examples behaved as expected",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "Passed; only local-sandbox executable",
+        "what": "python3 -B lab/tools/labctl.py verify-allowlist"
+      },
+      {
+        "result": "All three pinned manifests matched",
+        "what": "python3 -B lab/fixtures/generate.py --check"
+      },
+      {
+        "result": "85 files; zero hits or coverage errors",
+        "what": "python3 -B lab/tools/labctl.py scan --paths lab/evidence"
+      },
+      {
+        "result": "All valid with artifact existence and digest verification",
+        "what": "In-memory validation of all four retained report JSON files"
+      },
+      {
+        "result": "Escaped group directory reached callback; resolve_owned rejected the same directory",
+        "what": "Read-only mocked Path.resolve probe of runner group dispatch"
+      },
+      {
+        "result": "resolve_owned refused",
+        "what": "Read-only mocked owned-root symlink probe"
+      },
+      {
+        "result": "Schema accepted; canonical rejected",
+        "what": "JSON Schema versus canonical validation of err-stdout-empty.json"
+      },
+      {
+        "result": "Only synthetic /tmp probe paths matched",
+        "what": "rg scan of retained artifacts for home/workstation paths and selected secret markers"
+      },
+      {
+        "result": "Could not run checks: pinned tooling unavailable; requested setup-tools",
+        "what": "scripts/check"
+      },
+      {
+        "result": "Unavailable: snapshot has no Git repository metadata",
+        "what": "git rev-parse HEAD and git status --short"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Installs files; incompatible with read-only review"
+      },
+      {
+        "what": "Full lab runner and publication unittest suite",
+        "why": "Create or modify files"
+      },
+      {
+        "what": "Remote/container experiments",
+        "why": "No authorization; unnecessary for this review"
+      },
+      {
+        "what": "CI and AgentMarshal gate",
+        "why": "No SHA-bound result supplied and required tooling unavailable"
+      }
+    ],
+    "read": [
+      "README.md",
+      "docs/PRD.md",
+      "docs/research/landscape.md",
+      "docs/roadmap.md",
+      "docs/threat-model.md",
+      "docs/implementation-plan.md",
+      "docs/research/experiment-template.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "openspec/changes/validate-g0-feasibility/proposal.md",
+      "openspec/changes/validate-g0-feasibility/design.md",
+      "openspec/changes/validate-g0-feasibility/tasks.md",
+      "openspec/changes/validate-g0-feasibility/specs/feasibility-evidence/spec.md",
+      "openspec/specs/ (only .gitkeep)",
+      "Supplied contract and diff",
+      "scripts/setup-tools",
+      "scripts/check"
+    ]
+  }
+}

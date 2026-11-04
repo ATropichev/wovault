@@ -1,0 +1,142 @@
+{
+  "advisory_findings": [
+    "A1"
+  ],
+  "artifacts": [
+    {
+      "hash": "612a6bb67d52efe80f1d004ad481045804230aad837dd100f643855bb5374730",
+      "ref": ".agentmarshal/journal/tasks/CR-001/artifacts/01M6KSV6H3VJVMGXJZ0EVG1H8H-review.md"
+    }
+  ],
+  "classes": {
+    "A1": "correctness",
+    "F1": "security",
+    "F2": "contract-mismatch"
+  },
+  "created_at": "2026-11-04T17:31:26.115774Z",
+  "evidence": {
+    "A1": "lab/evidence/validate.py:233; in-memory executor.profile={} probe raised TypeError: unhashable type: 'dict'.",
+    "F1": "lab/tools/run_checks.py:1104 resolves PUBLISH_DIR itself; mocked root symlink probe returned publish root symlink modeled: True. Writes at :116 and :215 precede artifact validation.",
+    "F2": "lab/tools/run_checks.py:1143 embeds raw exception text; :215 writes unsanitized report JSON. In-memory probe: error blocker retains repository prefix: True; structural validation of error report: []."
+  },
+  "findings": [
+    "F1",
+    "F2"
+  ],
+  "previous_review": "01M6K7ZH6396SRF1W3WW4YDXQM",
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "8694288c6f79ae9a7e141815e8e3b4ef923e1ddb",
+  "reviewed_contract": "336df368f0cd14648aae8dad6ab964306cfb53a964723c15408d8c9096f67328",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-001",
+  "tool_version": "0.6.0",
+  "verdict": "changes_required",
+  "verification": {
+    "executed": [
+      {
+        "result": "Workspace path confirmed; Git commands failed because the snapshot has no Git repository. Commit identity could not be independently verified.",
+        "what": "pwd; git rev-parse HEAD; git status --short"
+      },
+      {
+        "result": "Passed all 25 examples.",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "All three pinned manifests matched.",
+        "what": "python3 -B lab/fixtures/generate.py --check"
+      },
+      {
+        "result": "Passed; local-sandbox executable, container and VPS profiles pending.",
+        "what": "python3 -B lab/tools/labctl.py verify-allowlist"
+      },
+      {
+        "result": "85 files scanned; zero hits, zero errors, complete coverage.",
+        "what": "python3 -B lab/tools/labctl.py scan --paths lab/evidence"
+      },
+      {
+        "result": "All valid; totals agree with 33 tested-pass and one blocked scenario.",
+        "what": "In-memory validation of all four retained reports with target and artifact existence/digest checks"
+      },
+      {
+        "result": "Schema valid; no schema-invalid example accepted by canonical validator.",
+        "what": "jsonschema Draft202012Validator.check_schema and comparison of all 25 example reports"
+      },
+      {
+        "result": "No schema-invalid report accepted; 41 validator exceptions.",
+        "what": "584 in-memory field-type mutations of valid-report.json"
+      },
+      {
+        "result": "Publication-root escape accepted; disposable-root escape refused.",
+        "what": "Read-only mocked publication-root and disposable-root symlink probes"
+      },
+      {
+        "result": "Artifact writes lack resolved destination checks; error report retained absolute repository prefix and passed structural validation. No writes reached disk.",
+        "what": "Intercepted artifact/report writes and in-memory harness exception report generation"
+      },
+      {
+        "result": "Only wov-g000-source received docker rm; unrelated-site was preserved. No Docker daemon contacted.",
+        "what": "Mocked activated-container cleanup with unrelated-site and wov-g000-source"
+      },
+      {
+        "result": "Inspected matches were synthetic probe paths, sandbox paths, canary IDs and redacted values; no workstation/home prefixes or credentials identified.",
+        "what": "rg scan of retained evidence for home, workstation, temporary paths and credential-related text"
+      },
+      {
+        "result": "Stopped at missing pinned AgentMarshal executable; public checks did not complete.",
+        "what": "scripts/check"
+      },
+      {
+        "result": "Could not execute brief: pinned AgentMarshal installation absent.",
+        "what": "agentmarshal brief --task CR-001 with repository scripts PATH and AGENTMARSHAL_ACTOR=agent-codex"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Installs dependencies and modifies files; prohibited by this read-only assignment."
+      },
+      {
+        "what": "run_checks.py all, fixture generation, reset and filesystem cleanup experiments",
+        "why": "Require filesystem mutations; retained evidence was inspected instead."
+      },
+      {
+        "what": "Live container or remote-VPS experiments",
+        "why": "Not authorized; container cleanup was checked using mocked subprocess calls only."
+      },
+      {
+        "what": "SHA-bound CI and AgentMarshal gate",
+        "why": "No actual SHA-bound CI result supplied; pinned governance tools and Git metadata absent."
+      }
+    ],
+    "read": [
+      "Supplied CR-001 contract and diff",
+      "README.md",
+      "docs/PRD.md",
+      "docs/research/landscape.md",
+      "docs/roadmap.md",
+      "docs/threat-model.md",
+      "docs/implementation-plan.md",
+      "docs/research/experiment-template.md",
+      "docs/research/g0-00-lab-and-evidence-protocol.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "openspec/changes/validate-g0-feasibility/proposal.md",
+      "openspec/changes/validate-g0-feasibility/design.md",
+      "openspec/changes/validate-g0-feasibility/tasks.md",
+      "openspec/changes/validate-g0-feasibility/specs/feasibility-evidence/spec.md",
+      "openspec/specs/ directory listing",
+      "Lab tooling, schema, fixtures, configuration, documentation and retained evidence supplied in the diff",
+      "scripts/check, scripts/setup-tools, scripts/agentmarshal and scripts/openspec"
+    ]
+  }
+}

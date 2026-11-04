@@ -1,0 +1,109 @@
+{
+  "artifacts": [
+    {
+      "hash": "7d5d64b3983953a902d19cc3c23d3bbc38d38a9bb70a8d29f2532bc12086603e",
+      "ref": ".agentmarshal/journal/tasks/CR-001/artifacts/01M6KTNSQ8HDDQ1WJXVHJ8PK4W-review.md"
+    }
+  ],
+  "created_at": "2026-11-04T17:45:57.736199Z",
+  "findings": [],
+  "previous_review": "01M6KTA8MV76C18WBXAFMG8ZYZ",
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "c0151409d384c04c5d55870e7afd69271aceea1e",
+  "reviewed_contract": "336df368f0cd14648aae8dad6ab964306cfb53a964723c15408d8c9096f67328",
+  "reviewer": {
+    "actor": "agent-codex-reviewer",
+    "email": "agent-codex-reviewer@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "reviewer",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-001",
+  "tool_version": "0.6.0",
+  "verdict": "approved",
+  "verification": {
+    "executed": [
+      {
+        "result": "Passed all 25 examples.",
+        "what": "python3 -B lab/evidence/validate.py --selftest"
+      },
+      {
+        "result": "All three pinned manifests matched.",
+        "what": "python3 -B lab/fixtures/generate.py --check"
+      },
+      {
+        "result": "Passed; local-sandbox executable, both other profiles pending.",
+        "what": "python3 -B lab/tools/labctl.py verify-allowlist"
+      },
+      {
+        "result": "85 files scanned; zero hits or errors.",
+        "what": "python3 -B lab/tools/labctl.py scan --paths lab/evidence"
+      },
+      {
+        "result": "All valid; referenced artifact existence and SHA-256 hashes verified.",
+        "what": "Python read-only validation of all four lab/evidence/runs/*.json reports"
+      },
+      {
+        "result": "Both tests passed.",
+        "what": "Python unittest execution of MalformedReportTests"
+      },
+      {
+        "result": "Zero schema-invalid reports accepted by the canonical validator.",
+        "what": "Python schema/canonical differential check over 792 field-type mutations"
+      },
+      {
+        "result": "Owned-root, child and publication-root symlink escapes refused; unowned and overlapping reset paths returned 3 with zero mutation calls.",
+        "what": "Python mocked path-resolution and reset refusal checks"
+      },
+      {
+        "result": "Only synthetic /tmp probe references matched.",
+        "what": "rg inspection of retained public artifacts for private absolute paths and common credential markers"
+      },
+      {
+        "result": "Could not complete: pinned AgentMarshal installation absent. This is not a candidate check failure.",
+        "what": "PATH=\"$PWD/scripts:$PATH\" AGENTMARSHAL_ACTOR=agent-codex scripts/check"
+      },
+      {
+        "result": "Unavailable: snapshot has no Git metadata; SHA association comes from the supplied review assignment.",
+        "what": "git rev-parse HEAD"
+      }
+    ],
+    "not_run": [
+      {
+        "what": "scripts/setup-tools",
+        "why": "Would modify files; review is read-only."
+      },
+      {
+        "what": "Full publication tests and run_checks.py all",
+        "why": "Create temporary workspaces or publish artifacts; prohibited by the read-only review."
+      },
+      {
+        "what": "Container, remote-VPS, CI and AgentMarshal gate verification",
+        "why": "No authorized execution environment or actual SHA-bound CI/gate result supplied; no success claimed."
+      }
+    ],
+    "read": [
+      "Supplied contract and diff",
+      "README.md",
+      "docs/PRD.md",
+      "docs/research/landscape.md",
+      "docs/roadmap.md",
+      "docs/threat-model.md",
+      "docs/implementation-plan.md",
+      "docs/development.md",
+      "docs/agent-workflow.md",
+      "docs/decisions/0001-scope-and-engines.md",
+      "docs/research/experiment-template.md",
+      "docs/research/g0-00-lab-and-evidence-protocol.md",
+      "openspec/changes/validate-g0-feasibility/",
+      "openspec/specs/ (empty except .gitkeep)",
+      ".agentmarshal/extensions/openspec.toml",
+      "lab documentation, configuration, generator, validator, runner, payload, tests and retained evidence",
+      "scripts/check, scripts/setup-tools and CLI wrappers"
+    ]
+  }
+}

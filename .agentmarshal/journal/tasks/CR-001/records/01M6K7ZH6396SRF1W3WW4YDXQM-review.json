@@ -1,0 +1,35 @@
+{
+  "artifacts": [
+    {
+      "hash": "97080c8917fcdd994fbecc4b7f1baf4ae8d3e1624da3832f2ec649bc7249009c",
+      "ref": ".agentmarshal/journal/tasks/CR-001/artifacts/01M6K7ZH6396SRF1W3WW4YDXQM-review.md"
+    }
+  ],
+  "created_at": "2026-11-04T12:19:13.731691Z",
+  "findings": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8"
+  ],
+  "record_type": "review",
+  "recorded_by": "agent-codex",
+  "recorded_by_source": "override",
+  "reviewed_commit": "cae8facfff41ac9065569d1fe81b082b94e5e76b",
+  "reviewer": {
+    "actor": "agent-codex",
+    "email": "agent-codex@wovault.invalid",
+    "model": "gpt-6.1-sol",
+    "role": "coordinator-review",
+    "vendor": "openai"
+  },
+  "schema": 7,
+  "source": "live",
+  "task": "CR-001",
+  "tool_version": "0.6.0",
+  "verdict": "changes_required"
+}
