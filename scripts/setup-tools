@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+node -e 'const [a,b]=process.versions.node.split(".").map(Number); if(a<22||(a===22&&b<12)) { console.error("Node >=22.12 required"); process.exit(1); }'
+uv venv --allow-existing .venv --python '>=3.12'
+uv pip sync --python .venv/bin/python tools/requirements.txt
+npm ci --prefix tools/openspec --ignore-scripts --no-audit --no-fund
+scripts/agentmarshal --version
+scripts/openspec --version

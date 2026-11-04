@@ -12,12 +12,14 @@ findings are part of the proposed product.
 
 ## Start here
 
-- [PRD — product requirements (Russian)](docs/PRD.md)
+- [PRD — product requirements](docs/PRD.md)
 - [Research — alternatives and build-versus-integrate decision](docs/research/landscape.md)
 - [Research sources and methodology](docs/research/sources.md)
 - [Architecture proposal](docs/architecture.md)
 - [Threat model and privilege boundaries](docs/threat-model.md)
 - [Delivery plan and acceptance scenarios](docs/roadmap.md)
+- [Implementation review and executable G0 plan](docs/implementation-plan.md)
+- [Development tooling — AgentMarshal and OpenSpec](docs/development.md)
 - [ADR 0001 — product scope and backup engines](docs/decisions/0001-scope-and-engines.md)
 - [Illustrative recovery manifest](examples/recovery-manifest.json)
 
@@ -49,6 +51,10 @@ retains its own name and licensing. The name WOVault is provisional: a repositor
 name search was performed, but no trademark or domain clearance is claimed.
 
 ## Public development
+
+English is the primary language for documentation, OpenSpec artifacts and
+AgentMarshal change-request contracts. See [CONTRIBUTING.md](CONTRIBUTING.md)
+for translation conventions.
 
 This repository intentionally contains synthetic examples only. Never submit
 production dumps, customer information, SSH keys, passwords, or private server

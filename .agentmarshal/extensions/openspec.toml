@@ -1,0 +1,19 @@
+# Declarative extension, following AgentMarshal v0.6.0's OpenSpec integration.
+# Schema 1 records ownership/context; it does not execute validation or archive.
+schema = 1
+name = "openspec"
+version = "1.15.0"
+footprint = [
+  "openspec/",
+  ".agents/skills/openspec-apply-change/",
+  ".agents/skills/openspec-archive-change/",
+  ".agents/skills/openspec-explore/",
+  ".agents/skills/openspec-propose/",
+  ".agents/skills/openspec-sync-specs/",
+  ".agents/skills/openspec-update-change/",
+  ".agents/skills/.openspec-target",
+]
+documents = ["openspec/specs/"]
+artifacts = ["openspec/changes/archive/"]
+install = "scripts/setup-tools && scripts/openspec init --tools codex --no-animation ."
+remove = "Remove only this manifest's listed footprint after checking outstanding contracts."

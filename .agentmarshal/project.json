@@ -1,0 +1,19 @@
+{
+  "framework": {
+    "version": "0.6.0"
+  },
+  "schema": 1,
+  "capture": {
+    "overrides": {
+      "reviews": "commit"
+    }
+  },
+  "actors": {
+    "agent-codex": {"git_identities": ["agent-codex@wovault.invalid"]},
+    "agent-devin": {"git_identities": ["agent-devin@wovault.invalid"]},
+    "agent-codex-implementer": {"git_identities": ["agent-codex-implementer@wovault.invalid"]},
+    "agent-codex-reviewer": {"git_identities": ["agent-codex-reviewer@wovault.invalid"]},
+    "agent-release-auditor": {"git_identities": ["agent-release-auditor@wovault.invalid"]},
+    "agent-additional-auditor": {"git_identities": ["agent-additional-auditor@wovault.invalid"]}
+  }
+}

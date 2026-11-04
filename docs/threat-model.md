@@ -1,92 +1,91 @@
-# Модель угроз и границы доступа
+# Threat model and access boundaries
 
-Дата: 2026-11-04 · Статус: требования к проектированию, не отчёт об аудите.
+Date: 2026-11-04 · Status: design requirements, not an audit report.
 
-## Защищаемые активы
+## Protected assets
 
-Данные сайтов и клиентов; SSH/DB/storage secrets; возможность менять production;
-история резервных точек; ключи расшифрования; доверенные baselines; доступность
-соседних сайтов; достоверность аудита и уведомлений.
+Site and customer data; SSH/database/storage secrets; the ability to change production;
+recovery-point history; decryption keys; trusted baselines; neighboring-site availability;
+and the reliability of audit records and notifications.
 
-## Границы доверия
+## Trust boundaries
 
-- Браузер оператора ↔ HTTPS API: любой запрос проверяется по RBAC и scope.
-- API ↔ worker: API задаёт типизированное задание, не произвольную shell-команду.
-- Центр ↔ VPS: host key pinning; источник может быть уже скомпрометирован.
-- Backup principal ↔ restore principal: разные capabilities и credentials.
-- Сайт ↔ root helper: недоверенный PHP/SQL не становится исполняемым root-кодом.
-- Центр ↔ storage: storage может потерять/подменить данные; encryption не заменяет retention.
-- Архив ↔ parser/lab: содержимое потенциально враждебно; сеть и mounts ограничены.
+- Operator browser ↔ HTTPS API: every request is checked against RBAC and scope.
+- API ↔ worker: the API submits a typed job, not an arbitrary shell command.
+- Control plane ↔ VPS: host-key pinning; the source may already be compromised.
+- Backup principal ↔ restore principal: separate capabilities and credentials.
+- Site ↔ root helper: untrusted PHP/SQL must not become executable root code.
+- Control plane ↔ storage: storage can lose/replace data; encryption does not replace retention.
+- Archive ↔ parser/lab: contents may be hostile; network access and mounts are restricted.
 
-## Матрица рисков
+## Risk matrix
 
-| Угроза | Меры первого выпуска | Остаточный риск |
+| Threat | First-release mitigations | Residual risk |
 |---|---|---|
-| Кража ключа backup | Forced command, site allowlist, запрет записи/restore, revocation | Чтение данных всех разрешённых сайтов |
-| Компрометация UI account | MFA, RBAC, reauth, короткие сессии, отдельные restore approvals | Разрешённые роли могут злоупотребить полномочиями |
-| Компрометация worker/control host | Разделение сервисов, secret scopes, отдельные keys, audit export | Работающий worker видит нужные ему secrets; возможен массовый ущерб |
-| Захваченный production | Pull, отсутствие storage credentials на VPS, внешние baselines | Источник может отдавать ложные данные и скрывать следы |
-| SSH MITM | Проверка fingerprint до credentials, pinning, block on change | Нужен доверенный канал первоначальной проверки |
-| Shell/path injection | Типизированный protocol, fixed argv, canonical paths, root-owned config | Parser/helper требует fuzzing и review |
-| Архивный traversal/symlink/device | Validate до распаковки, safe extraction, лимиты, отдельная VM | Уязвимость decompressor/runtime остаётся возможной |
-| Вредоносный SQL/config | Least-privilege DB import, no PHP eval/root execution, runtime sandbox | Восстановленный сайт всё ещё может содержать malware |
-| Удаление/шифрование новых файлов | Версионные snapshots, pins, аномалии, отдельная retention очередь | Уже испорченный источник даст испорченную новую копию |
-| Удаление старых копий | На проде нет ключей storage; отдельные prune права | Администратор центра/storage может удалить доступные копии; protected copy — P1 |
-| Повреждение storage | Authenticated manifests, engine checks, readback, restore tests | Проверки требуют времени, места и egress |
-| Потеря master key | Offline recovery kit, проверка процедуры импорта | Без резервного ключа decrypt невозможен |
-| Подмена target перед restore | Plan hash, inventory/fingerprint binding, revalidation | После проверки возможна внешняя гонка; site lock + повторные preconditions |
-| Ошибка выбора сайта | UUID, domain confirmation, plan diff, checkpoint | Человек может подтвердить неверный план |
-| Повреждение соседних сайтов | Site-scoped actions, запрет stack upgrades, integration assertions | Общие сервисы всё равно создают общую область отказа |
-| SSRF / metadata theft | Registered targets, CIDR allowlist, redirect policy, isolated scanner egress | Разрешённая приватная сеть остаётся доступной в пределах policy |
-| Утечка отчётов/логов | Redaction, safe metadata, download permissions, retention | Backup содержит персональные данные и требует отдельной защиты |
-| Остановка scheduler/уведомлений | Внешний heartbeat, freshness checks, visible delivery errors | Потеря одновременно центра и monitor требует внешнего реагирования |
+| Stolen backup key | Forced command, site allowlist, no writes/restore, revocation | Read access to data from all permitted sites |
+| Compromised UI account | MFA, RBAC, reauthentication, short sessions, separate restore approvals | Authorized roles can abuse their privileges |
+| Compromised worker/control host | Service separation, secret scopes, separate keys, audit export | A running worker sees the secrets it needs; widespread damage is possible |
+| Compromised production | Pull, no storage credentials on the VPS, external baselines | The source can return false data and hide evidence |
+| SSH MITM | Verify fingerprint before credentials, pinning, block on change | Initial verification needs a trusted channel |
+| Shell/path injection | Typed protocol, fixed argv, canonical paths, root-owned config | Parser/helper needs fuzzing and review |
+| Archive traversal/symlink/device | Validate before extraction, safe extraction, limits, separate VM | Decompressor/runtime vulnerabilities remain possible |
+| Malicious SQL/config | Least-privilege DB import, no PHP eval/root execution, runtime sandbox | The restored site may still contain malware |
+| Deletion/encryption of new files | Versioned snapshots, pins, anomalies, separate retention queue | A damaged source produces a damaged new backup |
+| Deletion of old backups | No storage keys on production; separate prune privileges | Control-plane/storage administrators can delete accessible copies; protected copy is P1 |
+| Storage corruption | Authenticated manifests, engine checks, readback, restore tests | Checks consume time, space and egress |
+| Lost master key | Offline recovery kit, tested import procedure | Decryption is impossible without a backup key |
+| Target substitution before restore | Plan hash, inventory/fingerprint binding, revalidation | External races remain possible after checking; use site locks and repeated preconditions |
+| Wrong site selected | UUID, domain confirmation, plan diff, checkpoint | A person may approve the wrong plan |
+| Neighboring-site damage | Site-scoped actions, no stack upgrades, integration assertions | Shared services still create a shared failure domain |
+| SSRF / metadata theft | Registered targets, CIDR allowlist, redirect policy, isolated scanner egress | Permitted private networks remain reachable within policy |
+| Report/log leaks | Redaction, safe metadata, download permissions, retention | Backups contain personal data and need separate protection |
+| Scheduler/notification outage | External heartbeat, freshness checks, visible delivery errors | Losing both the control plane and monitor requires external response |
 
-## Правила привилегий
+## Privilege rules
 
-Bootstrap/root credential допустим для инвентаризации и подтверждённой подготовки.
-По умолчанию он хранится только на время задания. Root password не включается в
-queue payload, argv, export или browser response. При необходимости постоянного
-administrative credential нужен явный выбор администратора, encryption и TTL.
+Bootstrap/root credentials are allowed for inventory and approved preparation.
+By default, they are retained only for the job's duration. Root passwords must not
+appear in queue payloads, argv, exports or browser responses. Persistent administrative
+credentials require an explicit administrator choice, encryption and TTL.
 
-Backup helper даёт чтение файлов/DB export/разрешённый inventory. Он не позволяет
-пользователю редактировать allowlist, выбирать произвольный путь или подменять
-исполняемые файлы. Установка root-owned помощника включает проверку всех parent
-directories, config owners и symlinks; sudo validation проводится до изменения правил.
+The backup helper permits file reads, database export and authorized inventory.
+It must not let the user edit the allowlist, select arbitrary paths or replace
+executables. Installing a root-owned helper includes checking every parent directory,
+config owner and symlink; validate sudo configuration before changing its rules.
 
-Restore helper имеет отдельную команду и capability. План из UI не считается
-достаточной защитой сам по себе: серверная сторона проверяет допустимые операции,
-целевой сайт, срок и соответствие текущему состоянию. Подпись/nonce защищают от replay
-в пределах заданного протокола; локальный root целевой VPS всё равно выше этой границы.
+The restore helper has a separate command and capability. A UI plan is not sufficient
+protection by itself: the server checks allowed operations, target site, expiry and
+agreement with current state. Signatures/nonces prevent replay within the defined
+protocol; local root on the target VPS remains above this boundary.
 
-Недопустимы общие grants на `bash`, `python`, `rsync`, `tar` или unrestricted `wp`.
-Недопустимо запускать `wp-config.php`/MU/plugins под root для получения DB password.
-Нельзя использовать общий `www-data` как обещание изоляции независимых клиентов.
+Blanket grants for `bash`, `python`, `rsync`, `tar` or unrestricted `wp` are forbidden.
+Do not run `wp-config.php`, MU plugins or plugins as root to obtain a database password.
+A shared `www-data` account cannot justify a promise of independent customer isolation.
 
-## Политика подозрительных копий
+## Suspicious-backup policy
 
-Подозрительная точка сохраняется с evidence и incident pin. Доверенные предыдущие
-точки не удаляются автоматически из-за новой подозрительной. «Acknowledge finding»
-не делает архив чистым; baseline approval — отдельное разрешение.
+Retain suspicious points with evidence and an incident pin. A new suspicious point
+must not automatically cause trusted older points to be deleted. Acknowledging a
+finding does not make an archive clean; baseline approval is a separate permission.
 
-Production restore подозрительной точки заблокирован по умолчанию. Допустим
-администраторский override с причиной после просмотра evidence, но integrity failures
-не обходятся такой кнопкой: повреждённые данные допускаются только в отдельный
-forensic/export workflow без обещания успешного восстановления.
+Production restoration of a suspicious point is blocked by default. An administrator
+may override it with a reason after reviewing evidence, but that override cannot
+bypass integrity failures: damaged data is only allowed in a separate forensic/export
+workflow without a promise of successful restoration.
 
-Проверки checksum обнаруживают изменения, а не все способы вторжения. Новая
-уязвимость может не менять файлы; вредоносная запись может находиться в БД;
-root-компрометация может подделывать любые ответы VPS. Для серьёзного инцидента
-предпочтительны изоляция хоста, сохранение evidence и восстановление доверенного
-окружения с ротацией credentials, а не «зелёный результат сканера».
+Checksum checks detect changes, not every intrusion method. A new vulnerability may
+leave files unchanged; malicious records may be in the database; root compromise can
+forge any VPS response. A serious incident calls for host isolation, preservation of
+evidence and recovery into a trusted environment with credential rotation, rather
+than relying on a green scanner result.
 
-## Требования к тестированию
+## Testing requirements
 
-Использовать только синтетические fixtures и разрешённые lab VPS. Проверить
-traversal, symlinks, special files, большие архивы, shell metacharacters, replay,
-cross-site paths, host key mismatch, secret canaries и scope обходы. Измерить,
-что backup principal не может изменить сайт, restore metadata или чужие файлы.
+Use only synthetic fixtures and authorized lab VPS instances. Test traversal,
+symlinks, special files, large archives, shell metacharacters, replay, cross-site
+paths, host-key mismatch, secret canaries and scope bypasses. Verify that the backup
+principal cannot change a site, restore metadata or another site's files.
 
-Перед первым стабильным выпуском нужен отдельный review SSH/sudo helper,
-credential handling, bundle parser и restore state machine. Реальный malware
-не загружается в публичный репозиторий; для детекторов используются безопасные
-синтетические индикаторы и тестовые сигнатуры.
+Before the first stable release, separately review the SSH/sudo helper, credential
+handling, bundle parser and restore state machine. Never upload real malware to the
+public repository; use safe synthetic indicators and test signatures for detectors.

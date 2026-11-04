@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ ! -x "$repo_root/.venv/bin/agentmarshal" ]]; then
+  echo 'Run scripts/setup-tools in the WOVault checkout first.' >&2
+  exit 1
+fi
+# Preserve cwd: the CLI selects the journal in the invoking repository.
+exec "$repo_root/.venv/bin/agentmarshal" "$@"

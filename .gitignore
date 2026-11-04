@@ -18,3 +18,9 @@ staging/
 secrets/
 __pycache__/
 .DS_Store
+.venv
+node_modules
+.cache/
+*.egg-info/
+lab-output/
+.local/

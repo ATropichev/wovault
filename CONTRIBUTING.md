@@ -7,9 +7,15 @@ Use issues for requirements, compatibility reports, and proposed changes. Refere
 requirement IDs and acceptance scenarios when proposing implementation work.
 Keep source-backed observations separate from assumptions and test results.
 
-Documentation is initially in Russian with an English entry point. English
-translations and corrections are welcome. Do not change requirement meaning
-silently when translating.
+English is the authoritative language for public documentation, ADRs, research
+summaries, OpenSpec artifacts and AgentMarshal change-request contracts, including
+acceptance criteria. Write new material and updates in English.
+
+Secondary translations are optional and non-authoritative. Record the source date
+or revision when maintaining one, and update it as needed. Preserve requirement IDs,
+acceptance-scenario IDs, priorities, commands, paths and machine-readable states.
+Do not silently change requirement meaning when translating. This language policy
+does not change the product's planned English/Russian UI support.
 
 Use synthetic domains under example.com, example.net, or example.org and
 documentation IP addresses. Remove secrets and private customer data from logs.

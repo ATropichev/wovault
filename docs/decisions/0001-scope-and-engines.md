@@ -1,55 +1,54 @@
-# ADR 0001: WordOps recovery control plane и повторное использование движков
+# ADR 0001: WordOps recovery control plane and backup-engine reuse
 
-Дата: 2026-11-04 · Статус: предложено, требует G0 spikes.
+Date: 2026-11-04 · Status: proposed; requires G0 spikes.
 
-## Контекст
+## Context
 
-Есть готовые web backup products. Исследование не обосновывает новый generic
-backup engine. Требование проекта — подключать существующий WordOps fleet и
-восстанавливать сайт с окружением на clean/existing VPS через проверенный план.
-Кроме S3 требуется обычное FTP-хранилище, которое не обладает всеми свойствами S3.
+Ready-made web backup products exist. The research does not justify a new generic
+backup engine. The project must enroll an existing WordOps fleet and restore sites
+and their environments to clean/existing VPS targets through a validated plan.
+In addition to S3, ordinary FTP storage is required, despite lacking some S3 properties.
 
-## Решение
+## Decision
 
-1. Создавать независимый control plane для inventory, policy, jobs, assurance и
-   recovery WordOps. Не делать WordPress plugin центральным компонентом.
-2. Размещать центр отдельно и использовать pull по SSH. На source нет ключей storage.
-3. Предложить Restic subprocess adapter для S3. Не копировать UI/код Backrest.
-4. FTP/FTPS поддержать через проверенный backend либо независимые encrypted bundles.
-   До G0 это не окончательный engine choice. Путь по умолчанию для проектирования —
-   full bundles + стандартная age implementation; собственного crypto нет.
-5. Backup и restore principals разделить. Постоянный root-доступ не является условием
-   регулярного backup; root/sudo допускается для bootstrap и approved restore.
-6. Начать с single-organization deployment и ограниченной compatibility matrix.
-7. Публиковать собственные исходники/документацию под MIT. Лицензии внешних binaries,
-   библиотек, bundled components и их notices проверять на выбранных версиях.
+1. Build an independent control plane for WordOps inventory, policies, jobs, assurance
+   and recovery. Do not make a WordPress plugin the central component.
+2. Host the control plane separately and use SSH pull. No storage keys on the source.
+3. Propose a Restic subprocess adapter for S3. Do not copy Backrest's UI/code.
+4. Support FTP/FTPS through a validated backend or independent encrypted bundles.
+   This is not a final engine choice before G0. The default design path is full
+   bundles with the standard age implementation; no custom cryptography.
+5. Separate backup and restore principals. Routine backups do not require persistent
+   root access; root/sudo is allowed for bootstrap and approved restoration.
+6. Start with single-organization deployment and a limited compatibility matrix.
+7. Publish original code/documentation under MIT. Check licenses and notices for
+   external binaries, libraries and bundled components at the selected versions.
 
-## Альтернативы
+## Alternatives
 
-- **Adopt Reaver.** Ближайший готовый продукт, но WordOps provisioning и открытая
-  модель лицензирования для всего проекта не подтверждены. Нужен demo на G0.
-- **Backrest fork.** Быстрый старт generic UI, но WordOps workflow всё равно
-  собственный; есть upstream и GPL-3.0 obligations. Форк без проверки не выбран.
-- **Duplicati reuse.** Сильный кандидат благодаря storage/UI; проверить API,
-  recovery orchestration и dependency footprint до окончательного отказа.
-- **Restic + rclone для всего.** Возможно, но наличие FTP transport не доказывает
-  нужную семантику locking/commit/recovery. Проверить, не объявлять заранее надёжным.
-- **Собственный dedup/crypto engine.** Отклонён: риск и стоимость не отвечают цели.
+- **Adopt Reaver.** The closest ready-made product, but WordOps provisioning and an
+  open-source licensing model for the entire project are unconfirmed. Requires a G0 demo.
+- **Backrest fork.** A quick generic UI foundation, but WordOps workflows still need
+  custom work, with upstream and GPL-3.0 obligations. No fork is chosen without validation.
+- **Duplicati reuse.** A strong storage/UI candidate; check its API, recovery orchestration
+  and dependency footprint before a final rejection.
+- **Restic + rclone for everything.** Possible, but FTP transport alone does not prove
+  the required locking/commit/recovery semantics. Test before claiming reliability.
+- **Custom dedup/crypto engine.** Rejected: its risk and cost do not serve the goal.
 
-## Последствия
+## Consequences
 
-Собственный UI/jobs слой остаётся значительной разработкой. Два storage-пути
-увеличивают число тестов; FTP full bundles требуют больше места/трафика. Зато
-формат не должен зависеть от длинной инкрементальной цепочки на слабом backend.
-S3 дедупликация и FTP standalone points имеют общий продуктовый recovery contract,
-но не обещают одинаковую стоимость и скорость.
+A custom UI/jobs layer remains substantial work. Two storage paths increase testing;
+full FTP bundles use more space/bandwidth. In return, the format should not depend
+on a long incremental chain on a weak backend. S3 deduplication and standalone FTP
+points share a product-level recovery contract, but not a cost or speed guarantee.
 
-Система не заявляет immutable backups в P0 только потому, что доступ идёт pull.
-Для защиты от компрометации самого центра нужна дополнительная независимая
-protected copy. Публичный GitHub не содержит реальных credentials/данных.
+The system does not claim immutable backups in P0 merely because access uses pull.
+Protection against compromise of the control plane itself requires an additional
+independent protected copy. Public GitHub content contains no real credentials/data.
 
-## Условие пересмотра
+## Reconsideration condition
 
-Если G0 показывает, что готовый открытый продукт закрывает P0 расширением с меньшим
-риском, выбрать интеграцию и обновить ADR/PRD. Если FTP bundle не проходит recovery
-и corruption tests, не выпускать стабильный продукт с неподтверждённой FTP поддержкой.
+If G0 shows that extending an existing open product meets P0 with less risk, choose
+integration and update the ADR/PRD. If FTP bundles fail recovery or corruption tests,
+do not ship a stable product with unvalidated FTP support.

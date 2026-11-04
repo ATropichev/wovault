@@ -1,0 +1,23 @@
+schema: spec-driven
+context: |
+  WOVault is in discovery; no application or installer exists yet.
+  The immediate milestone is G0, evaluating reuse and technical assumptions.
+  PRD requirements are intended behavior, not implemented capabilities.
+  Go/PostgreSQL/TypeScript, Restic and encrypted FTP bundles are proposals.
+  Stable scope includes web UI, registry, SSH pull, S3 and FTP/FTPS,
+  integrity and compromise indicators, clean and existing WordOps recovery.
+  Use only synthetic public data and explicitly authorized disposable labs.
+  Write all OpenSpec artifacts and CR contracts in English; preserve structural headings.
+  English public documentation is authoritative; translations must preserve requirement meaning.
+rules:
+  proposal:
+    - Write in English and preserve requirement IDs and scope.
+    - Identify the gate and explicit non-goals; do not silently reduce P0.
+  specs:
+    - Use SHALL requirements and WHEN/THEN scenarios with links to PRD and AC IDs.
+    - Distinguish planned, documented, tested, failed, blocked and unknown evidence.
+  design:
+    - State unresolved assumptions and conditions for adopting an existing product.
+  tasks:
+    - Every experiment needs inputs, reproducible steps, evidence and a pass condition.
+    - Leave experiment checkboxes unchecked until the actual run is evidenced.

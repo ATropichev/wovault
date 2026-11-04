@@ -1,445 +1,453 @@
 # WOVault — Product Requirements Document
 
-Версия: 0.1 · Дата: 2026-11-04 · Статус: подготовлено для обсуждения и реализации.
+Version: 0.1 · Date: 2026-11-04 · Status: ready for discussion and implementation.
 
-Это требования к будущему продукту. Рабочее приложение, установщик и проверенная
-матрица совместимости пока отсутствуют. Решения с пометкой «предложение» требуют
-технической проверки до фиксации. Исследование выполнено до написания требований:
-[аналоги](research/landscape.md), [источники](research/sources.md).
+These are requirements for a future product. A working application, installer and
+validated compatibility matrix do not yet exist. Decisions marked as proposals
+require technical validation before adoption. Research preceded the requirements:
+[alternatives](research/landscape.md), [sources](research/sources.md).
 
-## 1. Продукт и проблема
+## 1. Product and problem
 
-WOVault — независимый внешний центр резервного копирования и восстановления
-сайтов WordOps с web UI. Он хранит сведения о серверах, забирает данные по SSH,
-проверяет копии и помогает восстановить сайт после потери исходной VPS.
+WOVault is an independent external backup and recovery control plane for WordOps
+sites, with a web UI. It maintains server records, pulls data over SSH, verifies
+backups and helps restore a site after the original VPS is lost.
 
-Целевой пользователь — администратор или небольшое агентство с несколькими
-WordOps VPS. Ему нужно видеть, какие сайты защищены, насколько свежи копии,
-можно ли их восстановить и какие изменения требуют расследования.
+The target user is an administrator or small agency managing several WordOps VPS
+instances. They need to know which sites are protected, how fresh their backups
+are, whether they can be restored and which changes need investigation.
 
-Основной результат: оператор выбирает сохранённую точку, указывает целевую VPS,
-видит обнаруженное окружение и проверенный план, затем восстанавливает новый
-сайт либо заменяет существующий. Система сохраняет возможность отката замены и
-проверяет сайт до переключения публичного трафика.
+The primary outcome: an operator selects a retained recovery point and target VPS,
+reviews the discovered environment and validated plan, then restores a new site or
+replaces an existing one. The system preserves a rollback path for replacement
+and verifies the site before public traffic is switched over.
 
-## 2. Цели, границы и определения
+## 2. Goals, boundaries and definitions
 
-### Цели первого стабильного выпуска
+### Goals for the first stable release
 
-- Централизованно защищать сайты на нескольких WordOps серверах.
-- Работать при недоступном wp-admin и при полной потере исходной VPS.
-- Поддерживать S3-compatible и FTP/FTPS как самостоятельные хранилища.
-- Восстанавливать любую сохранённую полную точку в пределах подтверждённой
-  совместимости, без обязательного доступа к исходному серверу или GitHub.
-- Предоставлять проверяемые отчёты о целостности, консистентности и восстановлении.
-- Выявлять выбранные индикаторы компрометации и аномалии без автоматического лечения.
-- Публиковать исходники и документацию на GitHub без обязательной платной службы.
+- Centrally protect sites across multiple WordOps servers.
+- Work when wp-admin is unavailable or the original VPS is completely lost.
+- Support S3-compatible storage and FTP/FTPS as independent storage destinations.
+- Restore any retained full recovery point within validated compatibility limits,
+  without requiring access to the original server or GitHub.
+- Provide verifiable integrity, consistency and restoration reports.
+- Detect selected compromise indicators and anomalies without automatic remediation.
+- Publish source code and documentation on GitHub without a mandatory paid service.
 
-### Вне первого выпуска
+### Outside the first release
 
-Полный образ диска/ОС; управление почтовым сервером; непрерывная репликация и PITR;
-автоматическое объединение новых заказов WooCommerce со старой БД; произвольные
-панели вместо WordOps; независимые SaaS-арендаторы; автоматический перенос DNS;
-гарантированное обнаружение всех вторжений; автоматическое обновление всего парка.
-WordPress Multisite, удалённая БД и внешнее media/object storage первоначально
-обнаруживаются как особые конфигурации и блокируют заявление о полном покрытии.
+Full disk/OS images; mail-server management; continuous replication and PITR;
+automatically merging new WooCommerce orders into an older database; arbitrary
+panels instead of WordOps; independent SaaS tenants; automatic DNS migration;
+guaranteed detection of every intrusion; automatic fleet-wide upgrades.
+WordPress Multisite, remote databases and external media/object storage are
+initially detected as special configurations and prevent a full-coverage claim.
 
-### Термины
+### Terms
 
-| Термин | Значение |
+| Term | Meaning |
 |---|---|
-| Сервер | VPS с закреплённой SSH-идентичностью и историей инвентаризаций |
-| Сайт | Отдельный объект WordOps с неизменяемым ID WOVault; домен может меняться |
-| План | Выбор сайтов, расписания, состава, хранилищ, проверок и retention |
-| Точка восстановления | Зафиксированный набор файлов, дампа и метаданных; не просто запуск задания |
-| Полная точка | Имеет всё необходимое для восстановления сайта; физически может использовать дедупликацию |
-| DB-only / files-only | Частичная копия, не самостоятельная точка полного восстановления |
-| Инвентаризация | Наблюдения о текущем сервере с временем, источником и уровнем доверия |
-| Recovery kit | Экспорт каталога, ключей/инструкций и конфигурации для восстановления без старого центра |
-| Согласованный снимок | Данные собраны при подтверждённой остановке всех согласованных источников записи |
+| Server | A VPS with a pinned SSH identity and inventory history |
+| Site | A distinct WordOps object with an immutable WOVault ID; its domain can change |
+| Plan | Site selection, schedule, contents, storage, checks and retention |
+| Recovery point | A committed set of files, database dump and metadata; not merely a job run |
+| Full recovery point | Contains everything needed to restore a site; its physical storage may use deduplication |
+| DB-only / files-only | A partial backup, not a standalone full recovery point |
+| Inventory | Observations about a server, with time, source and trust level |
+| Recovery kit | An export of catalog information, keys/instructions and configuration for recovery without the old control plane |
+| Consistent snapshot | Data captured while all agreed write sources are confirmed to be stopped |
 
-«Из любой копии» означает из любой доступной полной точки, прошедшей необходимые
-проверки. Удалённая retention-политикой, повреждённая или частичная копия не должна
-показываться как готовая для полного восстановления.
+“From any backup” means any available full recovery point that passes the required
+checks. A point deleted by retention, damaged or partial must not be presented
+as ready for full restoration.
 
-## 3. Пользователи и доступ
+## 3. Users and access
 
-| Роль | Разрешения |
+| Role | Permissions |
 |---|---|
-| Администратор | Серверы, ключи, bootstrap, хранилища, политики, восстановление, удаление копий |
-| Оператор | Запуск разрешённых бэкапов/проверок; подготовка восстановления; применение в разрешённой области |
-| Наблюдатель | Статусы, обезличенные отчёты, история; без секретов, дампов и восстановления |
+| Administrator | Servers, keys, bootstrap, storage, policies, restoration and backup deletion |
+| Operator | Run authorized backups/checks; prepare restoration; apply it within the permitted scope |
+| Viewer | Status, sanitized reports and history; no secrets, dumps or restoration |
 
-Разрешения задаются на серверы/сайты и операции. Просмотр отчёта не даёт права
-скачать БД. Просмотр замаскированного секрета не позволяет получить исходное
-значение. Администратор может запретить оператору замену production-сайтов.
-Разрешение восстановления не подразумевает разрешение удаления резервных копий.
+Permissions apply to servers/sites and operations. Reading a report does not grant
+permission to download a database. Viewing a masked secret does not reveal its
+original value. An administrator can prohibit an operator from replacing production
+sites. Restoration permission does not imply permission to delete backups.
 
-## 4. Сценарии
+## 4. Scenarios
 
-### S1. Подключение существующего WordOps
+### S1. Connect an existing WordOps server
 
-Оператор вводит имя, адрес, порт, SSH-логин и пароль либо ключ с passphrase.
-Для bootstrap допустим root или пользователь с достаточным sudo. Перед отправкой
-учётных данных подтверждается SSH fingerprint по доверенному каналу. Read-only
-инвентаризация показывает ОС, версии, сервисы, сайты и нестандартные конфигурации.
+The operator supplies a name, address, port, SSH username and password or key with
+passphrase. Root or a user with sufficient sudo privileges is allowed for bootstrap.
+The SSH fingerprint is verified through a trusted channel before credentials are
+sent. Read-only inventory reports the OS, versions, services, sites and unusual
+configurations.
 
-После одобрения отдельного плана bootstrap устанавливается ограниченный помощник,
-создаётся или подключается backup-пользователь. Root-пароль по умолчанию не сохраняется.
-Пользователь выбирает сайты и назначает план. Новые обнаруженные сайты показываются
-как незащищённые; автоподключение возможно только по явно включённой политике.
+After a separate bootstrap plan is approved, a restricted helper is installed and
+a backup user is created or enrolled. The root password is not retained by default.
+The user selects sites and assigns a plan. Newly discovered sites appear as
+unprotected; automatic enrollment requires an explicitly enabled policy.
 
-### S2. Ежедневное копирование и контроль
+### S2. Daily backup and monitoring
 
-План забирает файлы и БД с каждого выбранного сайта. Недоступность одного сайта
-не отменяет копирование остальных. Оператор видит последнюю успешную полную точку,
-возраст БД/файлов, результат проверки хранилища и дату тестового восстановления.
-Отсутствие успешной копии вызывает уведомление даже тогда, когда scheduler не запустился.
+A plan pulls files and databases from each selected site. One unavailable site
+does not cancel backups of the others. The operator sees the latest successful
+full recovery point, database/file age, storage-check result and last restore-test
+date. Missing successful backups trigger an alert even if the scheduler did not run.
 
-### S3. Потеря VPS, восстановление на чистую
+### S3. Lost VPS: restore onto a clean target
 
-Оператор выбирает точку и добавляет новую VPS. Инвентаризация подтверждает отсутствие
-конфликтующего стека и поддержку ОС. Мастер предлагает установить проверенную версию
-WordOps, необходимые компоненты и сайт, затем восстановить данные. До применения
-показываются изменения, требования к месту, зависимости, предупреждения и этапы,
-которые не имеют автоматического отката. DNS остаётся отдельным действием оператора.
+The operator selects a recovery point and adds a new VPS. Inventory confirms a
+supported OS and no conflicting stack. The wizard proposes installing a validated
+WordOps version, required components and site, then restoring the data. Before
+application it shows changes, space requirements, dependencies, warnings and steps
+that have no automatic rollback. DNS remains a separate operator action.
 
-### S4. Восстановление на сервер с WordOps
+### S4. Restore onto an existing WordOps server
 
-Мастер показывает уже существующие сайты. Доступны создание отсутствующего сайта,
-клонирование на другой домен или замена выбранного существующего сайта. Для замены
-обязательны отдельное подтверждение, остановка записей, сохранение текущего состояния
-и проверка, что исходный сайт/план не изменились со времени просмотра. Остальные сайты
-не затрагиваются. Общие сервисы и их major-версии автоматически не заменяются.
+The wizard shows existing sites. It can create a missing site, clone to another
+domain or replace a selected existing site. Replacement requires separate approval,
+paused writes, preservation of the current state and verification that the original
+site/plan has not changed since review. Other sites remain unaffected. Shared
+services and their major versions are not automatically replaced.
 
-### S5. Подозрение на взлом
+### S5. Suspected compromise
 
-Система отмечает неожиданные изменения кода, новых администраторов или исполняемые
-файлы в загрузках. Подозрительная копия сохраняется с меткой, а доверенная старая
-точка удерживается. Анализ происходит отдельно от production. Восстановление такой
-копии по умолчанию разрешено только в изоляцию для расследования.
+The system flags unexpected code changes, new administrators or executable files
+in uploads. The suspicious backup is retained and labeled, and a trusted older
+point is pinned. Analysis takes place separately from production. By default,
+such a backup may only be restored into isolation for investigation.
 
-### S6. Потеря центра управления
+### S6. Lost control plane
 
-На новом внешнем сервере устанавливается WOVault. Администратор импортирует recovery
-kit либо подключает хранилище и отдельно сохранённые ключи, восстанавливает каталог
-из manifest. Доступ к старой control DB и работающий исходный сайт не требуются.
-Планы остаются выключенными до повторной проверки доступа и идентичности серверов.
+WOVault is installed on a new external server. The administrator imports a recovery
+kit or connects storage and separately retained keys, then rebuilds the catalog
+from manifests. Neither the old control database nor a working source site is
+required. Plans remain disabled until access and server identities are reverified.
 
-## 5. Реестр серверов и инвентаризация
+## 5. Server registry and inventory
 
-**REG-01 (P0).** Реестр содержит UUID, название, адрес, SSH-порт, host key,
-теги/среду, разрешённые сайты, ссылки на credentials, capability-профиль, последнюю
-инвентаризацию, время связи, состояние bootstrap и совместимость адаптера.
+**REG-01 (P0).** The registry includes UUID, name, address, SSH port, host key,
+tags/environment, permitted sites, credential references, capability profile,
+latest inventory, last contact time, bootstrap state and adapter compatibility.
 
-**REG-02 (P0).** Обнаруживать ОС/архитектуру, WordOps, Nginx, PHP-FPM и extensions,
-MariaDB/MySQL и client версии, WP-CLI, диски/inodes, точки монтирования, ACL/owners,
-включённые vhosts, домены/aliases, docroots, настройки кэша, сайт↔БД, prefix,
-внешние media и symlinks. Отдельно собирать site cron, systemd timers и нужные
-include-конфиги в пределах выданного доступа. Показывать недоступные разделы.
+**REG-02 (P0).** Discover OS/architecture, WordOps, Nginx, PHP-FPM and extensions,
+MariaDB/MySQL and client versions, WP-CLI, disks/inodes, mounts, ACLs/owners,
+enabled vhosts, domains/aliases, docroots, cache settings, site-to-database mapping,
+prefix, external media and symlinks. Separately collect site cron, systemd timers
+and required include configs within the granted access. Show inaccessible sections.
 
-**REG-03 (P0).** Для обнаружения использовать WordOps adapter с проверкой фактического
-синтаксиса и версий; не предполагать JSON API CLI. Сверять каталог WordOps с активными
-vhosts и файловой системой. Несоответствия требуют решения, а не скрытого исправления.
-Инвентаризация не исполняет PHP из сайта, включая `wp-config.php`. Динамические config
-и внешние секреты требуют явного адаптера; недостаток данных виден как blocker.
+**REG-03 (P0).** Use a WordOps adapter that verifies actual syntax and versions;
+do not assume the CLI has a JSON API. Reconcile the WordOps catalog with active
+vhosts and the filesystem. Discrepancies require a decision, not a hidden repair.
+Inventory must not execute site PHP, including `wp-config.php`. Dynamic configs
+and external secrets need an explicit adapter; missing information is a visible blocker.
 
-**REG-04 (P0).** Поддерживать повторное сканирование и diff. Смена host key блокирует
-задания до перепроверки. Сайты, исчезнувшие с сервера, сохраняют историю и копии;
-удаление сервера из UI не удаляет их автоматически. Повторная регистрация не должна
-создавать дубликаты или терять связь с прежними точками.
+**REG-04 (P0).** Support rescanning and diffs. Host-key changes block jobs until
+reverification. Sites that disappear from a server retain their history and backups;
+removing a server in the UI does not automatically delete them. Re-registration
+must not create duplicates or lose links to previous recovery points.
 
-**REG-05 (P0).** Показать возможности учётной записи: read files, dump DB, collect
-configs, bootstrap, restore. Текущий deploy-логин допустим при подходящих правах,
-но рекомендована отдельная read-only учётная запись. Один backup-пользователь может
-иметь явный allowlist нескольких сайтов; эта область доступа отображается в UI.
+**REG-05 (P0).** Show account capabilities: read files, dump DB, collect configs,
+bootstrap and restore. An existing deploy login is allowed with suitable privileges,
+but a separate read-only account is recommended. A backup user may have an explicit
+allowlist of several sites; this scope is displayed in the UI.
 
-## 6. План резервного копирования
+## 6. Backup plans
 
-**BKP-01 (P0).** План выбирает конкретные сайты либо правило с предварительным
-просмотром выборки, full/DB-only/files-only, include/exclude, хранилище, расписание,
-timezone, retention, лимиты ресурсов, consistency policy и проверки.
+**BKP-01 (P0).** A plan selects specific sites or a selection rule with a preview,
+full/DB-only/files-only mode, includes/excludes, storage, schedule, timezone,
+retention, resource limits, consistency policy and checks.
 
-**BKP-02 (P0).** Расписание: интервалы, ежедневное/еженедельное время и advanced cron;
-UI показывает ближайшие пять запусков. Хранить UTC и IANA timezone, корректно
-обрабатывать DST. Пропущенные запуски объединять в один catch-up по политике.
-Повторы ограничены, с backoff и idempotency key. Одинаковый запуск не создаёт
-две завершённые точки после потери ответа worker.
+**BKP-02 (P0).** Scheduling supports intervals, daily/weekly times and advanced cron;
+the UI shows the next five runs. Store UTC and an IANA timezone, handling DST correctly.
+Missed runs are coalesced into one catch-up according to policy. Retries are bounded,
+with backoff and an idempotency key. Losing a worker response must not cause the same
+run to create two completed recovery points.
 
-**BKP-03 (P0).** Полная точка включает все файлы сайта, БД, скрытые файлы, plugins,
-themes, MU, vendor/runtime dependencies, необходимый parent-level config и manifest
-версий/восстановления. Для восстановления не полагаться на доступность старых
-дистрибутивов или лицензируемого plugin download. Исключения кэша/логов/старых
-бэкапов объяснимы и видны; нельзя по умолчанию исключать весь `vendor`.
-Внешние зависимости включаются разрешённым адаптером либо отражаются как пробел.
+**BKP-03 (P0).** A full recovery point includes all site files, the database, hidden
+files, plugins, themes, MU plugins, vendor/runtime dependencies, required parent-level
+config and a version/recovery manifest. Restoration must not rely on old distributions
+or licensed plugin downloads remaining available. Cache/log/old-backup exclusions are
+explained and visible; the entire `vendor` directory must not be excluded by default.
+External dependencies are captured through an authorized adapter or reported as gaps.
 
-**BKP-04 (P0).** Сбор идёт pull по SSH, без записи ключей хранилища на защищаемый
-сервер. Пароли БД не передаются в argv/логи. Сервисам WordPress не нужны плагины
-WOVault. Если источник требует staging, он приватен, ограничен квотой и очищается
-после подтверждённой передачи; recovery kit содержит описание покрытия.
+**BKP-04 (P0).** Capture uses SSH pull, with no storage keys written to the protected
+server. Database passwords must not appear in argv or logs. WordPress services do
+not need WOVault plugins. Any source-side staging is private, quota-limited and
+cleaned after confirmed transfer; the recovery kit describes coverage.
 
-**BKP-05 (P0).** Статусы консистентности:
+**BKP-05 (P0).** Consistency states:
 
-| Режим | Обещание |
+| Mode | Guarantee |
 |---|---|
-| online | Согласованный транзакционный дамп поддерживаемых таблиц и файлы за интервал; общей атомарности нет |
-| quiesced | Все настроенные источники записи остановлены/заблокированы; файлы и БД собраны в подтверждённом окне |
-| degraded / unknown | Не удалось подтвердить согласованность; причина и ограничения явно указаны |
+| online | A consistent transactional dump of supported tables and files captured over an interval; no cross-resource atomicity |
+| quiesced | All configured writers are stopped/blocked; files and database are captured within a confirmed window |
+| degraded / unknown | Consistency could not be confirmed; the reason and limitations are explicit |
 
-`--single-transaction` не решает согласованность нетранзакционных таблиц, параллельного
-DDL или БД с файлами. Это следует из ограничений [mariadb-dump](https://mariadb.com/docs/server/clients-and-utilities/backup-restore-and-import-clients/mariadb-dump).
-Обычная `.maintenance` не доказывает остановку cron, 1С, очередей и внешних импортов.
-Строгий режим должен иметь writer-adapter и timeout с восстановлением прежнего
-состояния; при неизвестном writer он недоступен. Предварительная передача файлов
-сокращает паузу, но финальная сверка проводится внутри окна.
+`--single-transaction` does not ensure consistency for nontransactional tables,
+concurrent DDL or the database together with files. These limitations are described
+in [mariadb-dump](https://mariadb.com/docs/server/clients-and-utilities/backup-restore-and-import-clients/mariadb-dump).
+A plain `.maintenance` file does not prove that cron, 1C integrations, queues or
+external imports have stopped. Strict mode requires a writer adapter and a timeout
+that restores the previous state; it is unavailable with an unknown writer.
+Pre-transferring files reduces the pause, but final reconciliation occurs inside
+that window.
 
-**BKP-06 (P0).** Глобальные/per-server/per-site лимиты, IO/CPU/network ограничения,
-дедупликация очереди, взаимное исключение backup/restore/изменения схемы. Координация
-внешних deploy/import возможна только при интеграции; без неё UI не обещает quiesced.
-Timeout, ENOSPC и обрыв SSH не превращаются в успешный backup.
+**BKP-06 (P0).** Apply global/per-server/per-site limits, IO/CPU/network limits,
+queue deduplication and mutual exclusion between backup, restore and schema changes.
+External deploy/import coordination requires integration; without it, the UI must
+not promise quiesced capture. Timeout, ENOSPC and SSH interruption are not successes.
 
-**BKP-07 (P0).** Manifest фиксирует UUID, интервалы сбора, состав, exclusions,
-версии, digest файлов/дампа, ограничения, engine/format/key ID и результат передачи.
-Точка публикуется только после проверки необходимых объектов и завершающего commit
-record. Незавершённые передачи изолированы от каталога готовых точек.
+**BKP-07 (P0).** The manifest records UUIDs, capture intervals, contents, exclusions,
+versions, file/dump digests, limitations, engine/format/key IDs and transfer results.
+Publish a point only after verifying required objects and the final commit record.
+Incomplete transfers remain separate from the catalog of ready recovery points.
 
-**BKP-08 (P0).** Retention применяется только к завершённым точкам, учитывает
-зависимости, legal/incident pins и нижнюю границу восстановимых копий. Нельзя удалить
-последнюю полную точку автоматически после серии сбоев. Удаление и prune имеют
-отдельную очередь, права, предварительный план и журнал; protected storage может
-отложить физическое удаление. В интерфейсе это не считается ошибкой бэкапа.
+**BKP-08 (P0).** Retention applies only to completed points and accounts for dependencies,
+legal/incident pins and a minimum number of recoverable copies. Never automatically
+delete the last full point after repeated failures. Deletion and prune have a separate
+queue, permissions, preview plan and journal; protected storage may delay physical
+deletion. The UI must not classify that delay as a backup failure.
 
-## 7. Хранилища и ключи
+## 7. Storage and keys
 
-**STO-01 (P0).** S3-compatible: endpoint, region, bucket, prefix, credentials,
-TLS, path-style при необходимости. Тест возможностей включает list/read/write/delete
-в служебном тестовом prefix, multipart, восстановление небольшого зашифрованного
-набора и измерение места/квоты, если backend их сообщает. IAM scope ограничивается
-репозиторием; автоматическая очистка использует отдельные права при возможности.
+**STO-01 (P0).** S3-compatible settings: endpoint, region, bucket, prefix, credentials,
+TLS and path-style addressing where needed. Capability testing includes list/read/write/
+delete within a dedicated test prefix, multipart operations, restoration of a small
+encrypted dataset and space/quota measurement where the backend reports it. IAM scope
+is limited to the repository; automatic cleanup uses separate privileges where possible.
 
-**STO-02 (P0).** FTP/FTPS: host, port, TLS mode, passive settings, path, credentials,
-таймауты и capability test. FTP без TLS доступен как явный legacy-режим; UI сообщает,
-что учётные данные и метаданные соединения не защищены, даже при шифровании архива.
-Не называть FTP хранилищем с гарантированной неизменяемостью.
+**STO-02 (P0).** FTP/FTPS settings: host, port, TLS mode, passive settings, path,
+credentials, timeouts and capability testing. FTP without TLS is an explicit legacy
+mode; the UI warns that credentials and connection metadata are unprotected even
+when archives are encrypted. Do not describe FTP as guaranteed immutable storage.
 
-**STO-03 (P0).** Предложение: S3 — Restic; FTP/FTPS — независимые encrypted bundles
-с проверяемым manifest и загрузкой частями. Физическая дедупликация FTP не является
-обещанием первого выпуска. Обрыв загрузки не заменяет прошлую точку. FTP commit
-проверяется по фактическому содержимому, а не предположению об атомарном rename.
-Окончательный формат проходит spike и [ADR](decisions/0001-scope-and-engines.md).
+**STO-03 (P0).** Proposal: Restic for S3; independent encrypted bundles with verifiable
+manifests and uploads split into parts for FTP/FTPS. Physical FTP deduplication is not
+promised for the first release. An interrupted upload does not replace an earlier
+point. FTP commit verification relies on actual contents, not assumed atomic rename.
+The final format requires a spike and an [ADR](decisions/0001-scope-and-engines.md).
 
-**STO-04 (P0).** Шифрование до передачи обязательно. Ключи не лежат открыто в control
-DB и не зависят от root-пароля VPS. Recovery kit экспортируется зашифрованным с
-отдельно сохраняемым ключом/паролем. UI проверяет, что оператор сохранил материал
-восстановления. Потерянный ключ расшифрования нельзя «сбросить» как пароль UI.
+**STO-04 (P0).** Encryption before transfer is mandatory. Keys are not stored as
+plaintext in the control database and do not depend on the VPS root password.
+The recovery kit is exported encrypted, with its key/password stored separately.
+The UI verifies that the operator has retained recovery material. A lost decryption
+key cannot be “reset” like a UI password.
 
-**STO-05 (P0).** Подключение существующего хранилища восстанавливает каталог из
-manifest без старой control DB. Секретные поля и имена файлов не должны утекать
-через открытый каталог. Ротация key ID не делает старые точки нечитаемыми.
+**STO-05 (P0).** Connecting existing storage rebuilds the catalog from manifests
+without the old control database. Secret fields and filenames must not leak through
+an unencrypted catalog. Key-ID rotation must not make old points unreadable.
 
-**STO-06 (P1).** Второе хранилище, изолированная копия и проверенная защита от
-удаления. S3 Object Lock требует отдельного профиля совместимости, учёта версий
-объектов и retention; нельзя просто включить его поверх изменяемых lock/index
-объектов движка. Механика WORM описана в [документации AWS](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html).
+**STO-06 (P1).** A second destination, isolated copy and validated deletion protection.
+S3 Object Lock requires its own compatibility profile, object-version tracking and
+retention handling; it cannot simply be enabled over an engine's mutable lock/index
+objects. WORM semantics are described in the [AWS documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html).
 
-## 8. Проверки и признаки компрометации
+## 8. Verification and compromise indicators
 
-**VER-01 (P0).** Раздельные поля: transfer status, archive integrity, DB consistency,
-restore test, security findings. Для каждого — scope, timestamp, tool/rule version,
-evidence и `passed / failed / warning / not_checked / unsupported`. Нет единой
-зелёной метки «чистый и восстановимый» по одному exit code.
+**VER-01 (P0).** Separate fields for transfer status, archive integrity, database
+consistency, restore tests and security findings. Each has scope, timestamp,
+tool/rule version, evidence and `passed / failed / warning / not_checked / unsupported`.
+A single exit code must not produce one green “clean and recoverable” label.
 
-**VER-02 (P0).** После записи проверить manifest и обязательные объекты. По расписанию
-выполнять structural check, чтение выбранной части и полное чтение в заданном цикле.
-Учитывать egress/time budgets и явно показывать покрытие. Restic `check` без
-`--read-data` не проверяет содержимое всех pack-файлов; [документация](https://restic.readthedocs.io/en/stable/045_working_with_repos.html).
+**VER-02 (P0).** Verify the manifest and mandatory objects after writing. Schedule
+structural checks, subset reads and full reads within a defined cycle. Account for
+egress/time budgets and show coverage explicitly. Restic `check` without `--read-data`
+does not verify every pack file's contents; see the [documentation](https://restic.readthedocs.io/en/stable/045_working_with_repos.html).
 
-**VER-03 (P0).** Тест восстановления: расшифрование, безопасная распаковка, импорт
-в изолированную БД, проверки таблиц/основных записей, запуск совместимого runtime,
-HTTP smoke tests и site-specific assertions. Изоляция отключает SMTP, cron,
-webhooks, платёжные запросы, 1С и другой внешний egress. Потенциально заражённый
-код нельзя запускать внутри доверенного web/API процесса центра.
+**VER-03 (P0).** Restore tests include decryption, safe extraction, import into an
+isolated database, table/key-record checks, compatible runtime startup, HTTP smoke
+tests and site-specific assertions. Isolation disables SMTP, cron, webhooks, payment
+requests, 1C integrations and other external egress. Potentially infected code must
+not run inside the control plane's trusted web/API process.
 
-**SEC-01 (P0).** На полученной копии проверять: официальные checksum ядра/plugins,
-изменения собственного кода относительно явно доверенного release, исполняемые
-файлы в uploads, неожиданные MU/drop-ins, конфиги PHP/Nginx и suspicious patterns.
-Отсутствие официальных сумм означает unsupported, а не passed. Собственный код
-сравнивается с утверждённым артефактом, а не с автоматически принятой последней копией.
-Источники механизмов: [ядро](https://developer.wordpress.org/cli/commands/core/verify-checksums/),
-[плагины](https://developer.wordpress.org/cli/commands/plugin/verify-checksums/).
+**SEC-01 (P0).** On the captured copy, check official core/plugin checksums, custom
+code changes against an explicitly trusted release, executables in uploads,
+unexpected MU plugins/drop-ins, PHP/Nginx configs and suspicious patterns. Missing
+official checksums mean unsupported, not passed. Compare custom code with an approved
+artifact, not an automatically trusted latest backup. Mechanism sources:
+[core](https://developer.wordpress.org/cli/commands/core/verify-checksums/),
+[plugins](https://developer.wordpress.org/cli/commands/plugin/verify-checksums/).
 
-**SEC-02 (P0).** Из БД безопасно извлекать изменения администраторов/ролей,
-активных компонентов, siteurl/home, расписаний и важных настроек. Не включать
-пароли, session tokens и личные данные в отчёт. Массовое удаление файлов,
-скачок размера, новые домены/redirects, отсутствие копий и повторные ошибки —
-отдельные настраиваемые сигналы. Сравнение требует доверенного baseline.
+**SEC-02 (P0).** Safely extract changes to administrators/roles, active components,
+siteurl/home, schedules and important settings from the database. Reports must not
+include passwords, session tokens or personal data. Mass deletion, size spikes,
+new domains/redirects, missing backups and repeated errors are separate configurable
+signals. Comparisons require a trusted baseline.
 
-**SEC-03 (P0).** Finding имеет severity, confidence, причину, файлы/digests,
-первое/последнее обнаружение, статус расследования и suppress-until с объяснением.
-Автокарантин метит точку; не удаляет доказательства и не останавливает остальные
-бэкапы. Наличие finding не заменяет расследование; отсутствие не доказывает безопасность.
+**SEC-03 (P0).** A finding includes severity, confidence, reason, files/digests,
+first/last detection, investigation status and suppress-until with an explanation.
+Automatic quarantine labels a point; it does not delete evidence or stop other
+backups. A finding does not replace investigation, and its absence does not prove safety.
 
-**SEC-04 (P1).** Дополнительные ClamAV/YARA и vulnerability feeds с фиксированными
-версиями правил, учётом лицензий, лимитами и оценкой ложных срабатываний. Проверка
-известных уязвимостей не равна обнаружению уже состоявшегося взлома.
+**SEC-04 (P1).** Optional ClamAV/YARA and vulnerability feeds, with pinned rule versions,
+license accounting, resource limits and false-positive assessment. Checking known
+vulnerabilities is not the same as detecting a compromise that already occurred.
 
-**SEC-05 (P1).** Системные журналы, SSH accounts/keys, cron/systemd и listeners —
-отдельный read-only sensor с отдельно выданными правами. Продукт явно показывает,
-что site-level scan не даёт полного покрытия VPS и root-компрометации.
+**SEC-05 (P1).** System logs, SSH accounts/keys, cron/systemd and listeners use a
+separate read-only sensor with separately granted privileges. The product explicitly
+states that site-level scans do not fully cover the VPS or root compromise.
 
-## 9. Мастер восстановления
+## 9. Restoration wizard
 
-**RST-01 (P0).** Выбрать точку, проверить полноту, ключи и integrity; затем выбрать
-зарегистрированный target либо ввести адрес/порт/логин/root-пароль или SSH-ключ,
-passphrase и sudo password при необходимости. Секрет передаётся только по TLS,
-не возвращается браузеру и не сохраняется по умолчанию. Сохранение credential —
-отдельный выбор с областью и сроком. Продукт не включает root/password SSH, если
-он запрещён сервером; предлагает допустимый SSH-ключ или sudo-логин.
+**RST-01 (P0).** Select a point and check completeness, keys and integrity; then select
+a registered target or enter address/port/username/root password or SSH key,
+passphrase and sudo password where needed. Secrets travel only over TLS, are not
+returned to the browser and are not retained by default. Credential retention is a
+separate choice with scope and expiry. The product must not enable root/password SSH
+if the server forbids it; offer an allowed SSH key or sudo login instead.
 
-**RST-02 (P0).** Инвентаризация цели предшествует любым изменениям. Классы:
+**RST-02 (P0).** Inventory the target before any changes. Classes:
 `clean_supported`, `wordops_compatible`, `wordops_needs_review`, `conflicting_stack`,
-`unsupported`. Проверять ОС/архитектуру, порты, диски/inodes, версии/расширения,
-БД/доступы, действующие сайты, домены/aliases, внешние mount и необходимость reboot.
-Неизвестная ОС или другая панель не исправляются через автоматическое удаление.
+`unsupported`. Check OS/architecture, ports, disks/inodes, versions/extensions,
+databases/access, existing sites, domains/aliases, external mounts and reboot needs.
+An unknown OS or another panel must not be “fixed” by automatic removal.
 
-**RST-03 (P0).** Человекочитаемый план содержит исходную точку, target identity,
-режим create/clone/replace, домены, ресурсы, список изменений, secrets strategy,
-условия совместимости, checkpoints, потери данных, ручные действия и rollback.
-План связан с digest инвентаризации, fingerprint и сроком действия. Изменение цели
-или плана отменяет подтверждение. Применение требует повторной авторизации и
-ввода домена для replace; подтверждение относится к конкретному plan ID/hash.
+**RST-03 (P0).** A human-readable plan includes the source point, target identity,
+create/clone/replace mode, domains, resources, changes, secrets strategy, compatibility
+conditions, checkpoints, data loss, manual actions and rollback. Bind the plan to the
+inventory digest, fingerprint and expiry. Changing the target or plan invalidates
+approval. Applying requires reauthentication and domain entry for replacement;
+approval binds to a specific plan ID/hash.
 
-**RST-04 (P0).** На чистой VPS допускается установка проверенного WordOps release
-из закреплённого источника и компонентов по совместимому профилю. На действующей
-VPS нельзя неявно upgrade/downgrade MariaDB/Nginx, переустановить стек или менять
-общее Redis окружение. Если сайт нельзя разместить без риска соседним сайтам,
-предложить другую VPS либо отдельный административный план вне restore.
+**RST-04 (P0).** A clean VPS may receive a validated WordOps release from a pinned
+source and components matching a compatible profile. On an existing VPS, do not
+silently upgrade/downgrade MariaDB/Nginx, reinstall the stack or alter shared Redis.
+If hosting the site would put neighbors at risk, propose another VPS or a separate
+administrative plan outside restoration.
 
-**RST-05 (P0).** Create/clone создаёт отдельные БД, DB user, docroot и vhost через
-WordOps adapter. Восстанавливаются согласованные настройки сайта, а не весь `/etc`
-и не root-ключи старой VPS. Рендерятся проверяемые конфиги под цель; оригиналы
-сохраняются как справочный материал. Нестандартные snippets проходят review.
+**RST-05 (P0).** Create/clone provisions a separate database, database user, docroot
+and vhost through the WordOps adapter. Restore the agreed site settings, not all of
+`/etc` or the old VPS root keys. Render verifiable configs for the target and retain
+the originals as reference material. Nonstandard snippets require review.
 
-**RST-06 (P0).** Replace: получить lock, повторно сверить план, остановить записи,
-создать и проверить независимый pre-restore checkpoint текущих файлов/БД/config,
-затем развернуть staging и переключить после проверок. Если checkpoint не создан,
-замена блокируется. Не менять общий `/var/www` или соседние БД. Частичная ошибка
-возвращает выбранный сайт либо оставляет его в явно управляемом maintenance с
-точными recovery instructions; нельзя показывать ложное completed.
+**RST-06 (P0).** Replacement acquires a lock, revalidates the plan, pauses writes,
+creates and verifies an independent pre-restore checkpoint of current files/database/
+config, then prepares staging and switches over after checks. Without a checkpoint,
+replacement is blocked. Do not change the shared `/var/www` or neighboring databases.
+A partial failure restores the selected site or leaves it in explicitly managed
+maintenance with precise recovery instructions; never report a false completed state.
 
-**RST-07 (P0).** Полная замена БД уничтожает новые данные после выбранной точки.
-UI показывает её время и явное предупреждение о заказах/пользователях. Автоматическое
-слияние WooCommerce отсутствует. DB-only/files-only restore доступен в advanced
-режиме с проверкой совместимости и собственным checkpoint, но не маскируется под full.
+**RST-07 (P0).** Full database replacement destroys data written after the selected
+point. The UI shows its timestamp and an explicit orders/users warning. Automatic
+WooCommerce merging is not provided. DB-only/files-only restoration is an advanced
+mode with compatibility checks and its own checkpoint, and is not presented as full.
 
-**RST-08 (P0).** Для clone/change-domain выполнять сериализационно-безопасную замену
-URL с исключениями и отчётом. DB credentials генерируются для цели, salts по
-умолчанию новые. SMTP/payment/1С secrets выбираются по policy: preserve target,
-restore source или disabled; для preview/test всегда disabled. Никаких писем,
-cron или внешних интеграций до подтверждённого cutover.
+**RST-08 (P0).** Clone/domain changes use serialization-safe URL replacement with
+exclusions and a report. Generate database credentials for the target and new salts
+by default. SMTP/payment/1C secrets follow a policy: preserve target, restore source
+or disabled; previews/tests always use disabled. No email, cron or external
+integrations before confirmed cutover.
 
-**RST-09 (P0).** До DNS cutover проверить сайт через нужный Host/SNI и локальный
-override, Nginx config, PHP, DB и контрольные страницы; одного HTTP 200 недостаточно.
-TLS — отдельный план: временный закрытый preview, выпуск/проверка сертификата,
-затем публичная готовность. ACME HTTP требует маршрутизации домена; при её отсутствии
-не заявлять готовый публичный TLS. DNS автоматически не менять.
+**RST-09 (P0).** Before DNS cutover, verify the site with the correct Host/SNI and
+local override, Nginx config, PHP, database and reference pages; HTTP 200 alone is
+insufficient. TLS has a separate plan: temporary private preview, certificate
+issuance/verification, then public readiness. ACME HTTP requires domain routing;
+without it, do not claim public TLS is ready. Do not change DNS automatically.
 
-**RST-10 (P0).** Durable state machine, журнал шагов и checkpoints, safe retry,
-отмена на допустимых границах, ручное восстановление после reboot/потери worker.
-После cutover rollback требует нового решения: сайт уже мог принять записи.
-Отмена не означает автоматическое удаление готового сайта или возврат общих пакетов.
+**RST-10 (P0).** Use a durable state machine, step journal and checkpoints, safe
+retries, cancellation at permitted boundaries and manual recovery after reboot or
+worker loss. After cutover, rollback needs a new decision: the site may already
+have accepted writes. Cancellation does not automatically delete a ready site or
+roll back shared packages.
 
-**RST-11 (P0).** Подозрительная точка по умолчанию восстанавливается только в
-изолированную цель. Исключение для production требует администраторского override,
-повторной авторизации, причины и сохранённого отчёта. Root-доступ не исполняет
-архивный PHP, shell hooks или SQL из копии с глобальными полномочиями.
+**RST-11 (P0).** By default, a suspicious point may only be restored to an isolated
+target. A production exception requires an administrator override, reauthentication,
+a reason and a retained report. Root access must not execute archived PHP, shell
+hooks or backup SQL with global privileges.
 
-## 10. Web UI и отчёты
+## 10. Web UI and reports
 
-| Экран | Основные действия и данные |
+| Screen | Main actions and data |
 |---|---|
-| Обзор | Незащищённые сайты, просроченные копии, проверки, incidents, задания |
-| Серверы | Registry, связь, capabilities, inventory diff, enrollment/revocation |
-| Сайты | Покрытие, зависимости, версии, планы и история смены серверов |
-| Планы | Состав, расписание, следующий запуск, timezone, retention, лимиты |
-| Хранилища | Доступность, квоты, capabilities, encryption, key recovery |
-| Точки | Фильтры по сайту/дате; scope, возраст, completeness, pins, findings |
-| Восстановление | Выбор точки/цели, inventory, plan diff, подтверждение, шаги |
-| Проверки | Scope, результаты, evidence, тестовое восстановление, покрытие чтения |
-| Задания и аудит | Progress, retries, шаги, инициатор, безопасные логи, экспорт |
-| Настройки | Пользователи/роли, MFA, secrets, notifications, recovery kit |
+| Overview | Unprotected sites, stale backups, checks, incidents and jobs |
+| Servers | Registry, connectivity, capabilities, inventory diffs, enrollment/revocation |
+| Sites | Coverage, dependencies, versions, plans and server-migration history |
+| Plans | Contents, schedule, next run, timezone, retention and limits |
+| Storage | Availability, quotas, capabilities, encryption and key recovery |
+| Recovery points | Site/date filters; scope, age, completeness, pins and findings |
+| Restoration | Point/target selection, inventory, plan diff, approval and steps |
+| Verification | Scope, results, evidence, restore tests and read coverage |
+| Jobs and audit | Progress, retries, steps, initiator, safe logs and exports |
+| Settings | Users/roles, MFA, secrets, notifications and recovery kit |
 
-**UI-01 (P0).** Фильтры и ссылки между объектами, доступность с клавиатуры,
-адаптивный интерфейс, время с timezone, English/Russian. Progress отражает
-измеренную стадию/байты, неизвестная длительность не маскируется фиктивным процентом.
+**UI-01 (P0).** Provide filters and links between objects, keyboard accessibility,
+a responsive interface, times with timezone, and English/Russian. Progress reflects
+measured stages/bytes; unknown duration must not be hidden behind a fabricated percentage.
 
-**UI-02 (P0).** Уведомления через SMTP и generic webhook с retry/deduplication:
-ошибка, stale backup, integrity failure, critical finding, завершение restore и
-недоступное хранилище. Нет секретов/дампов в payload. Доставка сообщений не входит
-в успешность backup, но её сбой виден. Настройка канала имеет test action.
+**UI-02 (P0).** SMTP and generic webhook notifications with retry/deduplication cover
+errors, stale backups, integrity failures, critical findings, completed restores
+and unavailable storage. No secrets/dumps in payloads. Notification delivery is
+separate from backup success, but delivery failures remain visible. Channel setup
+includes a test action.
 
-## 11. Нефункциональные требования
+## 11. Nonfunctional requirements
 
-**NFR-01 (P0).** Внешняя Linux VPS/VM, постоянные workers, SSH egress, HTTPS UI,
-приватное persistent staging и DB. Предложение: Docker Compose на старте; control
-host не должен быть защищаемой VPS. PHP-only shared hosting не поддерживается.
-Размер диска рассчитывается по крупнейшим параллельным staging/restore, DB dump,
-расшифрованию и safety checkpoint; UI блокирует работу при нехватке места.
+**NFR-01 (P0).** An external Linux VPS/VM with persistent workers, SSH egress, HTTPS UI,
+private persistent staging and database. Proposal: Docker Compose initially; the
+control host must not be a protected VPS. PHP-only shared hosting is unsupported.
+Disk sizing accounts for the largest concurrent staging/restore operations, database
+dumps, decryption and safety checkpoints; the UI blocks work when space is insufficient.
 
-**NFR-02 (P0).** Session security, MFA для privileged actions, CSRF, rate limiting,
-RBAC на API, SSH host key pinning, redaction, защита от shell/path/argument injection,
-archive traversal, symlink escape, decompression bombs и SSRF к metadata endpoints.
-Администратор явно разрешает приватные CIDR, если они нужны для VPS/storage.
+**NFR-02 (P0).** Session security, MFA for privileged actions, CSRF protection, rate
+limiting, API RBAC, SSH host-key pinning, redaction, and defenses against shell/path/
+argument injection, archive traversal, symlink escape, decompression bombs and SSRF
+to metadata endpoints. Administrators explicitly allow private CIDRs if needed for
+VPS or storage access.
 
-**NFR-03 (P0).** API не запускает SSH/архивы внутри HTTP request lifecycle. Workers
-имеют leases/heartbeats и журнал идемпотентных шагов. Логи и метрики не содержат
-секретов. Audit append-only на уровне приложения с экспортом; это не обещание
-неизменяемости против root центра. Отдельный heartbeat отслеживает сам scheduler.
+**NFR-03 (P0).** The API does not run SSH/archive operations within the HTTP request
+lifecycle. Workers use leases/heartbeats and an idempotent step journal. Logs and
+metrics contain no secrets. Audit is append-only at the application level, with
+export; this does not promise immutability against control-host root. A separate
+heartbeat monitors the scheduler itself.
 
-**NFR-04 (P0).** Форматы и adapter protocol версионируются. Новая версия читает
-все ранее поддержанные форматы первого major. Upgrade центра имеет DB backup,
-миграцию, документированный rollback и тест восстановления старых точек.
+**NFR-04 (P0).** Formats and adapter protocols are versioned. New versions read all
+previously supported formats within the first major release. Control-plane upgrades
+include a database backup, migration, documented rollback and old-point restoration tests.
 
-**NFR-05 (P0).** Предварительный benchmark профиль: 10 VPS, 100 сайтов, один сайт
-до 50 GiB файлов и 5 GiB БД; центр 4 vCPU/8 GiB RAM с отдельно рассчитанным диском.
-Это целевой тестовый профиль, не гарантированный предел или обещание RTO.
-Первый compatibility target — Ubuntu 24.04 amd64 с проверенным WordOps release;
-точные PHP/MariaDB и source→target комбинации фиксируются по результатам spike.
-Другие ОС/версии не объявлять поддержанными только по upstream списку.
+**NFR-05 (P0).** Preliminary benchmark profile: 10 VPS instances, 100 sites, up to
+50 GiB of files and 5 GiB of database per site; a 4-vCPU/8-GiB-RAM control host with
+separately sized disk. This is a target test profile, not a guaranteed limit or RTO.
+The first compatibility target is Ubuntu 24.04 amd64 with a validated WordOps release;
+exact PHP/MariaDB and source-to-target combinations are recorded after the spike.
+Do not claim support for other OS/version combinations based only on upstream lists.
 
-## 12. Метрики успеха и приёмка
+## 12. Success metrics and acceptance
 
-| Метрика | Критерий первого выпуска |
+| Metric | First-release criterion |
 |---|---|
-| Полнота точки | Ни один повреждённый/неполный тестовый набор не опубликован как complete |
-| Сохранность соседей | Все create/replace tests сохраняют контрольные hashes/config/DB соседних сайтов |
-| Disaster recovery | Все заявленные source→target combinations проходят восстановление без источника |
-| Восстановление центра | Каталог/ключи восстанавливаются из kit и storage без прежней control DB |
-| Security state | Все seeded indicators дают finding; unsupported checks не превращаются в passed |
-| Секреты | Canary secrets отсутствуют в API responses, process args, logs и публичных артефактах |
-| Оповещения | Stale backup выявляется не позднее двух интервалов мониторинга; default interval 5 минут |
-| Recovery objectives | План хранит RPO; измеряет RTO от старта до проверенного serving и отдельно до public cutover |
+| Point completeness | No damaged/incomplete test dataset is published as complete |
+| Neighbor preservation | All create/replace tests preserve reference hashes/configs/databases of neighboring sites |
+| Disaster recovery | Every claimed source-to-target combination restores without the source |
+| Control-plane recovery | Catalog/keys recover from kit and storage without the previous control database |
+| Security state | Every seeded indicator yields a finding; unsupported checks never become passed |
+| Secrets | Canary secrets are absent from API responses, process arguments, logs and public artifacts |
+| Alerts | Stale backups are detected within two monitoring intervals; the default interval is 5 minutes |
+| Recovery objectives | Plans store RPO; RTO is measured from start to verified serving and separately to public cutover |
 
-Полный набор сценариев, failure injection и release gates: [roadmap](roadmap.md).
-Нет универсального обещания восстановления «за минуту»: RTO зависит от объёма,
-канала, хранилища, установки пакетов, TLS и действий с DNS.
+The full scenario set, failure injection and release gates are in the [roadmap](roadmap.md).
+There is no universal “one-minute recovery” promise: RTO depends on data volume,
+bandwidth, storage, package installation, TLS and DNS actions.
 
-## 13. Приоритеты, риски и открытые решения
+## 13. Priorities, risks and open decisions
 
-P0 — обязательное для первого стабильного выпуска, включая FTP и оба target modes.
-Промежуточная alpha может иметь только S3; её нельзя выдавать за полный продукт.
-P1 — усиление защиты хранилища, системные sensors, дополнительные engine/adapters.
+P0 is mandatory for the first stable release, including FTP and both target modes.
+An intermediate alpha may be S3-only; it must not be presented as the complete product.
+P1 covers stronger storage protection, system sensors and additional engines/adapters.
 
-Критические риски: центральные credentials ко всем серверам; недоверенный архив;
-неатомарность БД/файлов; несовместимые версии; изменение общей конфигурации WordOps;
-retention при дедупликации; ложное чувство безопасности от malware checks.
-Меры и остаточные риски: [threat model](threat-model.md).
+Critical risks: centralized credentials for all servers; untrusted archives;
+non-atomic database/file capture; incompatible versions; shared WordOps configuration
+changes; retention with deduplication; false confidence from malware checks.
+Mitigations and residual risks are in the [threat model](threat-model.md).
 
-Предложенные, ещё не утверждённые решения: Go backend/workers, PostgreSQL, web UI
-на TypeScript; Restic для S3; отдельный bundle-формат для FTP; MIT для собственного
-кода; single-organization deployment. До начала реализации обязательны spikes
-по совместимости WordOps, strict consistency, FTP и rollback действующего сайта.
-Внешние коммерческие malware/vulnerability feeds и DNS providers не выбраны.
+Proposed, not yet approved: Go backend/workers, PostgreSQL, TypeScript web UI;
+Restic for S3; a separate FTP bundle format; MIT for original code; single-organization
+deployment. WordOps compatibility, strict consistency, FTP and existing-site rollback
+spikes are mandatory before implementation. External commercial malware/vulnerability
+feeds and DNS providers have not been selected.
 
-Public repository содержит только обобщённые требования и синтетические примеры.
-Реальные сайты, IP, пароли, ключи и дампы в него не переносятся.
+The public repository contains only generalized requirements and synthetic examples.
+Do not copy real sites, IP addresses, passwords, keys or dumps into it.

@@ -1,61 +1,61 @@
-# Архитектурное предложение
+# Architecture proposal
 
-Дата: 2026-11-04 · Статус: проектное решение для проверки spikes.
-Нормативные требования: [PRD](PRD.md). Код компонентов ещё не написан.
+Date: 2026-11-04 · Status: proposed design to validate through spikes.
+Normative requirements: [PRD](PRD.md). Component code has not been written yet.
 
-## 1. Развёртывание
+## 1. Deployment
 
-Предложение: отдельная Linux VPS, Docker Compose, HTTPS reverse proxy, web/API,
-durable workers, PostgreSQL и приватный staging. UI/API не запускают длительные
-задания синхронно. Первый вариант без Kubernetes и без обязательного SaaS API.
-Обычный shared hosting без worker/SSH/disk capabilities не подходит.
+Proposal: a dedicated Linux VPS, Docker Compose, HTTPS reverse proxy, web/API,
+durable workers, PostgreSQL and private staging. UI/API must not run long jobs
+synchronously. The initial version needs neither Kubernetes nor a mandatory SaaS API.
+Ordinary shared hosting without worker/SSH/disk capabilities is unsuitable.
 
 ```mermaid
 flowchart LR
-    Admin[Администратор] --> UI[HTTPS Web UI / API]
+    Admin[Administrator] --> UI[HTTPS Web UI / API]
     UI --> DB[(PostgreSQL: registry / jobs / audit)]
     DB --> Worker[Backup / restore workers]
-    Keys[Внешний master key / recovery material] --> Worker
-    Worker -->|SSH pull| Helper[Ограниченный помощник на WordOps]
-    Helper --> Sites[Сайты / дампы БД / разрешённые конфиги]
-    Worker --> Stage[Приватный staging]
+    Keys[External master key / recovery material] --> Worker
+    Worker -->|SSH pull| Helper[Restricted WordOps helper]
+    Helper --> Sites[Sites / DB dumps / permitted configs]
+    Worker --> Stage[Private staging]
     Stage --> Restic[Restic adapter]
     Stage --> Bundle[Encrypted bundle adapter]
     Restic --> S3[(S3-compatible)]
     Bundle --> FTP[(FTP / FTPS)]
-    Stage --> Scanner[Изолированный статический анализ]
-    Worker --> Lab[Изолированная restore VM]
-    Worker -->|Отдельная авторизация| Target[Целевая VPS / WordOps]
+    Stage --> Scanner[Isolated static analysis]
+    Worker --> Lab[Isolated restore VM]
+    Worker -->|Separate authorization| Target[Target VPS / WordOps]
 ```
 
-Control host — высокодоверенный узел. Компрометация его workers/ключей может
-затронуть все доступные сайты. Разделение процессов и шифрование БД уменьшают
-риски отдельных утечек, но не делают скомпрометированный worker безопасным.
+The control host is highly trusted. Compromise of its workers/keys can affect all
+accessible sites. Process separation and database encryption reduce individual
+leak risks but do not make a compromised worker safe.
 
-## 2. Компоненты и ответственность
+## 2. Components and responsibilities
 
-| Компонент | Ответственность |
+| Component | Responsibility |
 |---|---|
 | Web/API | Auth/MFA/RBAC, registry, plan preview, confirmations, reports |
 | Scheduler | UTC/timezone, catch-up, idempotency, freshness monitoring |
 | Job runner | Leases/heartbeats, durable steps, cancellation boundaries, retries |
 | SSH transport | Host key pinning, credential delivery, timeouts, output limits |
 | WordOps adapter | Inventory, compatibility, create/update metadata, site-scoped planning |
-| Backup helper | Разрешённые site IDs, чтение файлов, DB export, inventory; без root PHP |
-| Restore helper | Отдельные полномочия, одноразовый plan scope, checkpoints/cutover |
+| Backup helper | Permitted site IDs, file reads, DB export, inventory; no PHP as root |
+| Restore helper | Separate privileges, single-use plan scope, checkpoints/cutover |
 | Storage adapters | Capability test, commit, read/check/delete, recovery catalog |
-| Static scanner | Недоверенные файлы/SQL, baseline diff, evidence, limits |
-| Restore lab | Отдельная VM, запрещённый egress, DB/runtime/smoke tests |
-| Key provider | Шифрование credentials, key IDs, rotation, recovery export |
+| Static scanner | Untrusted files/SQL, baseline diff, evidence, limits |
+| Restore lab | Separate VM, blocked egress, DB/runtime/smoke tests |
+| Key provider | Credential encryption, key IDs, rotation, recovery export |
 
-Предложенный стек: Go для API/workers/helpers, PostgreSQL для состояния,
-TypeScript web UI. Язык и UI framework окончательно выбираются после G0;
-они не являются пользовательским ограничением. Привилегированные helpers должны
-быть малы, с проверяемым протоколом; не переносить в них произвольную shell-консоль.
+Proposed stack: Go for API/workers/helpers, PostgreSQL for state, TypeScript web UI.
+The language and UI framework will be finalized after G0; they are not user-imposed
+constraints. Privileged helpers must be small, with a verifiable protocol; do not
+turn them into an arbitrary shell console.
 
-## 3. Модель данных
+## 3. Data model
 
-| Сущность | Важные поля |
+| Entity | Important fields |
 |---|---|
 | Server | id, address, port, host_keys, tags, enrollment, capabilities |
 | CredentialRef | type, encrypted_value/ref, scope, expires_at, key_id |
@@ -71,34 +71,35 @@ TypeScript web UI. Язык и UI framework окончательно выбир�
 | Approval | actor, plan_hash, target fingerprint, time, reauthentication |
 | AuditEvent | actor, scope, action, object, result, correlation_id, safe metadata |
 
-Пароли БД, SQL и содержимое сайтов в registry не хранятся. В audit — ссылки и
-digests, а не дампы. Control DB хранит производный каталог; архивные manifest
-позволяют восстановить его заново. Локальное время отображения не меняет UTC timestamps.
+The registry does not store database passwords, SQL or site contents. Audit holds
+references and digests, not dumps. The control database holds a derived catalog;
+archived manifests allow it to be rebuilt. Displaying local time does not alter UTC
+timestamps.
 
-## 4. Bootstrap и постоянный доступ
+## 4. Bootstrap and ongoing access
 
-1. Пользователь подтверждает host fingerprint по доверенному каналу.
-2. Read-only inventory собирается административным доступом, отдельно от install.
-3. UI показывает план установки: файлы helper, accounts, sudo rules, backup scope.
-4. После approval устанавливается закреплённый helper с checksum/signature.
-5. Создаётся ключ постоянного backup-доступа с ограниченным forced-command protocol;
-   отключены PTY, agent/X11/port forwarding. Plain `rsync` вне разрешённого протокола
-   не допускается; helper реализует site-scoped transfer либо проверенную rrsync-схему.
-6. Sudo выдаётся только фиксированным root-owned helper, не `bash`, `rsync`, `tar`,
-   `wp` или интерпретатору с произвольными аргументами. Registry allowlist root-owned.
-7. Административный пароль удаляется из оперативного сеанса; сохранение только
-   по отдельному выбору. Не сохранять SSH agent forwarding как механизм доступа.
+1. The user verifies the host fingerprint through a trusted channel.
+2. Read-only inventory uses administrative access, separately from installation.
+3. The UI shows an installation plan: helper files, accounts, sudo rules and backup scope.
+4. After approval, a pinned helper is installed with checksum/signature verification.
+5. Create a persistent backup-access key with a restricted forced-command protocol;
+   disable PTY, agent/X11/port forwarding. Plain `rsync` outside the approved protocol
+   is forbidden; the helper implements site-scoped transfer or a validated rrsync scheme.
+6. Grant sudo only to fixed root-owned helpers, not `bash`, `rsync`, `tar`, `wp` or
+   an interpreter accepting arbitrary arguments. The registry allowlist is root-owned.
+7. Remove the administrative password from the active session; retaining it requires
+   a separate explicit choice. Do not use SSH agent forwarding for persistent access.
 
-Файлы могут читаться через ограниченный privileged exporter, но PHP сайта никогда
-не выполняется с root. Дамп выполняется с выделенными DB privileges, а не импортом
-`wp-config.php` как PHP. Конфиг с динамической логикой требует явно настроенного
-способа получения секрета; нельзя безопасно «догадаться» через eval.
+A restricted privileged exporter may read files, but site PHP never runs as root.
+Dumps use dedicated database privileges, not a PHP import of `wp-config.php`.
+Dynamic config logic requires an explicitly configured secret retrieval method;
+it cannot safely be guessed through eval.
 
-Для нескольких сайтов один системный backup-пользователь допустим. Граница его
-доступа — совокупность allowlisted сайтов. Для независимых клиентов используются
-разные credentials и области хранения; первый выпуск не обещает SaaS tenant isolation.
+One system backup user may cover several sites. Its access boundary is the union
+of allowlisted sites. Independent customers use separate credentials and storage
+scopes; the first release does not promise SaaS tenant isolation.
 
-## 5. Capture и публикация точки
+## 5. Capture and recovery-point publication
 
 ```mermaid
 stateDiagram-v2
@@ -118,65 +119,66 @@ stateDiagram-v2
     checks_pending --> [*]
 ```
 
-`committed` означает завершённое хранение, не malware-free и не restore-tested.
-Findings/проверки обновляют отдельные записи. Копии с проблемами сохраняются с
-соответствующей меткой; «успех» задания не скрывает degraded capture consistency.
+`committed` means storage is complete, not malware-free or restore-tested.
+Findings/checks update separate records. Problematic backups are retained with
+appropriate labels; job “success” must not hide degraded capture consistency.
 
-Capture использует preflight свободного места и lock. Для online режима сохраняется
-интервал files/DB и проверяются конфликты изменений. Для strict/quiesced профиля
-сначала передаются основные файлы, затем останавливаются все известные writers,
-выполняются final sync и transaction dump. Все writer states сохраняются для cleanup.
-Потеря worker должна иметь ограниченную lease и управляемый watchdog; только создание
-`.maintenance` такой гарантии не даёт. При неподтверждённом freeze strict не включается.
+Capture uses a free-space preflight and a lock. Online mode records the files/database
+interval and checks conflicting changes. Strict/quiesced profiles pre-transfer the
+main files, stop all known writers, then perform final sync and a transactional dump.
+All writer states are retained for cleanup. Worker loss requires a bounded lease
+and a managed watchdog; creating `.maintenance` alone provides no such guarantee.
+Strict mode is not enabled when the freeze is unconfirmed.
 
-Logical DB dump — не копирование `/var/lib/mysql`. Версии client/server фиксируются.
-Triggers, routines, events и views инвентаризируются; их включение/исключение явно
-записывается. Дефайнеры и event execution не переносятся автоматически в production.
-Нетранзакционные таблицы и DDL требуют отдельной стратегии, а не тихого fallback.
+A logical database dump is not a copy of `/var/lib/mysql`. Client/server versions
+are recorded. Triggers, routines, events and views are inventoried, and their
+inclusion/exclusion is explicit. Definers and event execution are not automatically
+carried into production. Nontransactional tables and DDL need a separate strategy,
+not a silent fallback.
 
-При передаче не следовать произвольным symlink за пределы allowlist. Archive
-сохраняет допустимые ссылки как метаданные, но target restore валидирует разрешённые
-пути отдельно. Не допускать устройств, sockets, setuid/setgid исполняемых файлов и
-архивных UID как инструкций для создания системных пользователей.
+Transfers must not follow arbitrary symlinks outside the allowlist. The archive
+preserves permitted links as metadata, but target restoration validates allowed
+paths separately. Reject devices, sockets, setuid/setgid executables, and treating
+archived UIDs as instructions to create system users.
 
 ## 6. Storage adapters
 
 ### S3 / Restic
 
-Предложение — отдельный repository на site или ограниченную группу доверия,
-шифрование Restic, stable path layout и manifest внутри snapshot. Разделение repo
-снижает масштаб утечки и упрощает retention, но уменьшает cross-site dedup.
-Данные поступают в Restic из staging внешнего центра; credentials S3 на production
-не передаются. Идентификатор точки не совпадает с изменяемой строкой домена.
+Proposal: a separate repository per site or limited trust group, Restic encryption,
+a stable path layout and a manifest inside each snapshot. Repository separation
+limits leak scope and simplifies retention but reduces cross-site deduplication.
+Restic reads data from external control-plane staging; S3 credentials never reach
+production. Recovery-point identity is independent of the mutable domain string.
 
-После подтверждения engine snapshot каталог фиксирует commit record. При падении
-между этими шагами reconciliation находит snapshot по operation ID и завершает
-регистрацию без повторного capture. Prune сериализуется с repository operations.
-Полное чтение и структурные checks имеют независимые результаты.
+After the engine confirms a snapshot, the catalog records a commit. If a crash
+occurs between these steps, reconciliation finds the snapshot by operation ID and
+finishes registration without repeating capture. Prune is serialized with repository
+operations. Full reads and structural checks have independent results.
 
 ### FTP / FTPS
 
-Предлагаемый fallback: полные независимые `tar.zst` bundles, шифруемые стандартным
-age, разбитые на части для возобновления transfer. Manifest содержит их размеры,
-порядок и digest, а сам подписан ключом центра и зашифрован. Возобновление касается
-передачи уже сформированного набора; новый dump не приклеивается к старым частям.
+Proposed fallback: full independent `tar.zst` bundles encrypted with standard age,
+split into parts for resumable transfer. The manifest records sizes, order and
+digests, and is itself signed with the control-plane key and encrypted. Resuming
+means transferring an already formed dataset; a new dump is not appended to old parts.
 
-Сначала отправляются unique objects, затем manifest, последним commit marker.
-Reader доверяет точке только после проверки signature, decrypt и всех необходимых
-объектов. Ни FTP mtime, ни наличие marker не заменяют readback. Для FTP full readback
-перед подтверждением integrity обязателен; structural status отображается отдельно.
-Подпись не доказывает отсутствие взлома источника — только происхождение manifest.
+Upload unique objects first, then the manifest, then a commit marker. A reader trusts
+a point only after signature verification, decryption and verification of all required
+objects. Neither FTP mtime nor marker presence replaces readback. Full FTP readback
+is mandatory before confirming integrity; structural status is shown separately.
+The signature proves manifest origin, not the absence of source compromise.
 
-Никакой собственной реализации криптографических примитивов. Формат container,
-signature library и versioning подлежат отдельной спецификации в spike. Первая
-стабильная версия не должна зависеть от экспериментального bundle parser.
+Do not implement cryptographic primitives. Container format, signature library and
+versioning require a separate spike specification. The first stable release must
+not depend on an experimental bundle parser.
 
-### Неизменяемая копия
+### Immutable copy
 
-Дополнительная независимая копия с retention protection — P1. Нужно отдельно
-испытать Restic lock/index/prune и Object Lock, версионность S3, восстановление
-старых object versions и защиту от delete markers. Нельзя считать включённую
-галочку S3 Versioning достаточной защитой от администратора с правом permanent delete.
+An additional independent copy with retention protection is P1. Separately test
+Restic lock/index/prune with Object Lock, S3 versioning, recovery of old object
+versions and protection against delete markers. Enabling S3 Versioning alone is
+not sufficient protection against an administrator with permanent-delete rights.
 
 ## 7. Restore orchestration
 
@@ -202,59 +204,59 @@ stateDiagram-v2
     rollback_required --> needs_operator
 ```
 
-Для create шаг checkpointed фиксирует исходный target inventory и факт отсутствия
-сайта; для replace он требует реальную проверенную safety copy. Ошибки inventory,
-approval и revalidation завершаются до изменений; ошибки checkpoint отменяют замену.
-Потеря lease после любой мутации переводит job в reconciliation, а не слепой retry.
+For create, checkpointed records the original target inventory and the site's
+absence; for replace, it requires an actual verified safety copy. Inventory,
+approval and revalidation failures stop before changes; checkpoint failure cancels
+replacement. Lease loss after any mutation triggers reconciliation, not blind retry.
 
-Action graph содержит preconditions/postconditions, idempotency и compensation для
-каждого шага. Установка пакетов не является атомарной транзакцией. На чистой VPS её
-неуспех может потребовать ручной cleanup/reprovision; это показывается до approval.
-На занятой VPS stack migration автоматически не выполняется.
+The action graph includes preconditions/postconditions, idempotency and compensation
+for every step. Package installation is not atomic. On a clean VPS, failure may
+require manual cleanup/reprovisioning; show this before approval. Never automatically
+migrate the stack on an occupied VPS.
 
-Restore stage состоит из безопасной распаковки, новой БД с минимальными правами,
-адаптации DB credentials/URLs, конфигов и smoke tests. SQL — недоверенные данные:
-не импортировать его DB-root с правами FILE/SUPER/создания чужих БД. Исполняемые
-triggers/events и серверные команды требуют ограничений и отдельного review.
+Restoration consists of safe extraction, a new least-privilege database, adapting
+database credentials/URLs, configs and smoke tests. SQL is untrusted data: do not
+import it as database root with FILE/SUPER or permission to create other databases.
+Executable triggers/events and server commands require restrictions and separate review.
 
-WordOps metadata/vhost/docroot/DB cutover проверяются интеграционными тестами.
-Если безопасный staging layout не поддерживается конкретным адаптером, restore
-mode для него блокируется; нельзя обещать нулевой downtime через обычный rsync.
-Replace выполняется в write freeze до финальной проверки. После возобновления
-записей откат к старому checkpoint — новое потенциально разрушительное действие.
+Integration tests verify WordOps metadata/vhost/docroot/database cutover. If an adapter
+cannot support a safe staging layout, block that restore mode; ordinary rsync cannot
+justify a zero-downtime promise. Replacement keeps writes frozen until final validation.
+Once writes resume, restoring an old checkpoint is a new potentially destructive action.
 
-DNS не меняется. HTTPS preview выполняется с корректными Host/SNI; тестовые
-интеграции отключены на уровне сети и приложения. В UI отдельно отражаются
-`serving_verified`, `awaiting_public_cutover`, `completed`.
+DNS is unchanged. HTTPS previews use correct Host/SNI; test integrations are disabled
+at network and application levels. The UI separately reports `serving_verified`,
+`awaiting_public_cutover` and `completed`.
 
-## 8. Проверки и доверенные эталоны
+## 8. Checks and trusted baselines
 
-Static scan выполняется в sandbox с read-only input, ресурсными лимитами и
-контролируемыми сетевыми запросами к доверенным checksum sources. Baseline собственного
-кода имеет release ID, digest и явное approval. «Принять все изменения» после каждой
-копии не допускается как автоматическая политика.
+Static scans run in a sandbox with read-only input, resource limits and controlled
+network requests to trusted checksum sources. A custom-code baseline has a release
+ID, digest and explicit approval. Automatically accepting all changes after every
+backup is not an allowed policy.
 
-DB analysis не запускает восстановленный WordPress. SQL разбирается безопасным
-ограниченным parser или импортируется в одноразовую БД без глобальных привилегий.
-Dynamic restore test выполняется в отдельной VM, особенно для suspicious copies.
-Docker-контейнер с host mounts и привилегиями не считается такой изоляцией.
+Database analysis does not start restored WordPress. SQL is handled by a safe,
+restricted parser or imported into a disposable database without global privileges.
+Dynamic restore tests run in a separate VM, especially for suspicious copies.
+A Docker container with host mounts and privileges does not provide this isolation.
 
-## 9. Recovery kit и восстановление центра
+## 9. Recovery kit and control-plane recovery
 
-Kit включает versioned configuration export, catalog hints, repository locations,
-format/engine versions, wrapped encryption keys и инструкции offline CLI recovery.
-SSH/root credentials можно экспортировать только отдельно и явно; для восстановления
-данных они не обязательны. Мастер-ключ не включается открыто рядом с ciphertext.
+The kit includes a versioned configuration export, catalog hints, repository
+locations, format/engine versions, wrapped encryption keys and offline CLI recovery
+instructions. SSH/root credentials may only be exported separately and explicitly;
+they are not required to recover data. Never place a plaintext master key beside
+ciphertext.
 
-На новом центре выполняются decrypt/import, подключение storage, верификация manifest,
-rebuild каталога и проверка доступа. Все schedules/restore approvals отключены.
-Если kit устарел, новые точки всё равно обнаруживаются из storage при наличии ключей.
+On the new control plane, decrypt/import, connect storage, verify manifests, rebuild
+the catalog and check access. Disable all schedules/restore approvals. Even if the
+kit is outdated, newer points remain discoverable from storage when keys are available.
 
-## 10. Проверки архитектуры до выбора реализации
+## 10. Architecture checks before implementation selection
 
-- Измерить staging disk usage, dump size, CPU, S3 requests/egress и RTO.
-- Проверить фактический CLI WordOps и различия версий, не полагаться на старые docs.
-- Испытать restart в каждой границе state machine, host key rotation и revoke.
-- Проверить, что ключ backup не может вызвать restore, произвольный `wp` или shell.
-- Сделать recovery без источника, старого центра, GitHub и исходных plugin downloads.
-- Подтвердить FTP формат, readback, повреждения частей и отсутствие ложного commit.
+- Measure staging disk usage, dump size, CPU, S3 requests/egress and RTO.
+- Check actual WordOps CLI behavior and version differences; do not rely on old docs.
+- Test restarts at every state-machine boundary, host-key rotation and revocation.
+- Verify that the backup key cannot invoke restore, arbitrary `wp` or a shell.
+- Recover without the source, old control plane, GitHub or original plugin downloads.
+- Validate FTP format, readback, damaged parts and absence of false commits.
