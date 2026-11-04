@@ -36,3 +36,5 @@ For tested results, provide reproducible commands and safe evidence artifacts.
 - Limitations, residual risks and what was not tested:
 - Implications for adopt/integrate/build; required follow-up:
 - Check for credentials/restricted information before public inclusion:
+
+<!-- Temporary synthetic branch-protection probe; no experiment was performed. -->
